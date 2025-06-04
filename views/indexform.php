@@ -5,7 +5,7 @@ session_start();
 include __DIR__ . '/../config/database.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.html");
+    header("Location: login.php");
     exit();
 }
 
