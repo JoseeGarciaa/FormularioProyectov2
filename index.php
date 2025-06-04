@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Si ya ha iniciado sesión, redirige directamente a la bienvenida
 if (isset($_SESSION['nombre'])) {
     header("Location: views/bienvenida.php");
     exit();
@@ -83,15 +82,12 @@ if (isset($_SESSION['nombre'])) {
 </head>
 
 <body>
-
   <img src="assets/images/Banner-Universidad-Santiago-de-Cali-USC-1.png" alt="Banner USC" class="banner-img">
-
   <h1>Bienvenido a la Plataforma USC</h1>
 
   <div class="botones">
     <a href="views/login.html" class="btn">Iniciar Sesión</a>
     <a href="views/register.html" class="btn">Registrarse</a>
   </div>
-
 </body>
 </html>
