@@ -20,10 +20,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: ../views/bienvenida.php");
             exit();
         } else {
-            echo "<p style='color:red; text-align:center;'>Contraseña incorrecta.</p>";
+            header("Location: ../views/login.html?status=error");
+            
+            exit();
         }
     } else {
-        echo "<p style='color:red; text-align:center;'>Correo no encontrado.</p>";
+        header("Location: ../views/login.html?status=error"); 
+        
+        exit();
     }
     $stmt->close();
     $conn->close();
