@@ -1,11 +1,11 @@
 <?php
 session_start();
+include __DIR__ . '/../config/database.php';
+
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../views/login.html");
     exit();
 }
-
-include '../config/conexion.php';
 
 $usuario_id = $_SESSION['usuario_id'];
 $edad = $_POST['edad'];
@@ -14,57 +14,52 @@ $numero_celular = $_POST['numero_celular'];
 $programa_id = $_POST['programa_id'];
 $semestre = $_POST['semestre'];
 $jornada = $_POST['jornada'];
-$fecha = $_POST['fecha'];
+$fecha = date('Y-m-d'); // Se genera automáticamente
 
-$materias = [];
-for ($i = 1; $i <= 7; $i++) {
-    $materias[] = isset($_POST["materia$i"]) ? $_POST["materia$i"] : null;
-}
-
-// Validar si ya existe inscripción para ese usuario y semestre
-$query = "SELECT id FROM Inscripciones WHERE usuario_id = ? AND semestre = ?";
-$stmt = $conn->prepare($query);
+// Validar si ya existe una inscripción para ese usuario y semestre
+$verificar_sql = "SELECT id FROM Inscripciones WHERE usuario_id = ? AND semestre = ?";
+$stmt = $conn->prepare($verificar_sql);
 $stmt->bind_param("ii", $usuario_id, $semestre);
 $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows > 0) {
-    echo "<script>alert('Ya has realizado una inscripción para este semestre.'); window.location.href = '../views/bienvenida.php';</script>";
+    echo "Ya existe una inscripción para este semestre.";
     exit();
 }
 $stmt->close();
 
-// Insertar nueva inscripción
-$query = "INSERT INTO Inscripciones 
-(usuario_id, edad, genero, numero_celular, programa_id, semestre, jornada, fecha, 
- Materia1, Materia2, Materia3, Materia4, Materia5, Materia6, Materia7) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+// Insertar inscripción
+$insert_sql = "INSERT INTO Inscripciones (usuario_id, edad, genero, numero_celular, programa_id, semestre, jornada, fecha)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+$stmt = $conn->prepare($insert_sql);
+$stmt->bind_param("iisssiss", $usuario_id, $edad, $genero, $numero_celular, $programa_id, $semestre, $jornada, $fecha);
+$stmt->execute();
+$inscripcion_id = $stmt->insert_id;
+$stmt->close();
 
-$stmt = $conn->prepare($query);
-$stmt->bind_param(
-    "iississsssssss",
-    $usuario_id,
-    $edad,
-    $genero,
-    $numero_celular,
-    $programa_id,
-    $semestre,
-    $jornada,
-    $fecha,
-    $materias[0],
-    $materias[1],
-    $materias[2],
-    $materias[3],
-    $materias[4],
-    $materias[5],
-    $materias[6]
-);
+// Insertar materias si están definidas
+for ($i = 1; $i <= 7; $i++) {
+    $campo = "materia$i";
+    if (!empty($_POST[$campo])) {
+        $materia_nombre = $_POST[$campo];
 
-if ($stmt->execute()) {
-    echo "<script>alert('Inscripción exitosa'); window.location.href = '../views/bienvenida.php';</script>";
-} else {
-    echo "Error al inscribir: " . $stmt->error;
+        // Buscar el ID real de la materia según nombre y programa
+        $materia_stmt = $conn->prepare("SELECT id FROM Materias WHERE nombre = ? AND programa_id = ?");
+        $materia_stmt->bind_param("si", $materia_nombre, $programa_id);
+        $materia_stmt->execute();
+        $materia_stmt->bind_result($materia_id);
+        $materia_stmt->fetch();
+        $materia_stmt->close();
+
+        if (!empty($materia_id)) {
+            $insert_materia = $conn->prepare("INSERT INTO MateriasInscritas (inscripcion_id, materia_id) VALUES (?, ?)");
+            $insert_materia->bind_param("ii", $inscripcion_id, $materia_id);
+            $insert_materia->execute();
+            $insert_materia->close();
+        }
+    }
 }
 
-$stmt->close();
-$conn->close();
+echo "Inscripción realizada correctamente.";
+?>
