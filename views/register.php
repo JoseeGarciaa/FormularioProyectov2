@@ -121,7 +121,7 @@
       <input type="submit" value="Registrarse">
     </form>
     <div class="link">
-      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+      ¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a>
     </div>
   </div>
 </body>
