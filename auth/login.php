@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
     } else {
-        header("Location: ../views/login.html?status=error"); 
+        header("Location: ../views/login.php?status=error"); 
         
         exit();
     }
