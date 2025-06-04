@@ -12,24 +12,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows === 1) {
+    if ($result && $result->num_rows === 1) {
         $usuario = $result->fetch_assoc();
+
         if (password_verify($contrasena, $usuario['contrasena'])) {
             $_SESSION['nombre'] = $usuario['nombre'];
             $_SESSION['usuario_id'] = $usuario['id'];
-            header("Location: ../views/bienvenida.php");
-            exit();
-        } else {
-            header("Location: ../views/login.php?status=error");
-            
+            $_SESSION['rol'] = $usuario['rol'];
+
+            // Redirección según el rol
+            if ($usuario['rol'] === 'admin') {
+                header("Location: ../admin/dashboard.php");
+            } else {
+                header("Location: ../views/bienvenida.php");
+            }
             exit();
         }
-    } else {
-        header("Location: ../views/login.php?status=error"); 
-        
-        exit();
     }
-    $stmt->close();
-    $conn->close();
+
+    header("Location: ../views/login.php?status=error");
+    exit();
 }
 ?>
