@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Formulario de Inscripción</title>
   <style>
+    /* Puedes reemplazar este bloque con tu archivo CSS si ya lo tienes */
     .banner-img {
       display: block;
       width: 100%;
@@ -12,24 +13,27 @@
       object-fit: contain;
       animation: fadeIn 1s ease;
     }
+
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #001f87, #630000);
+      background: linear-gradient(90deg, #001f87, #630000);
       margin: 0;
       padding: 0;
     }
+
     h1 {
       color: #ffffff;
       font-size: 32px;
-      background-color: transparent;
       padding: 15px 30px;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 1.2);
@@ -38,21 +42,24 @@
       text-align: center;
       animation: fadeIn 1s ease;
     }
+
     form {
       max-width: 600px;
       margin: 30px auto;
-      background: transparent;
+      background: #00000000;
       padding: 30px;
       border-radius: 15px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 1.2);
       animation: fadeInUp 0.8s ease-out;
     }
+
     label {
       display: block;
       margin-bottom: 8px;
       color: #ffffff;
       font-weight: bold;
     }
+
     input, select {
       width: 100%;
       padding: 10px;
@@ -60,91 +67,88 @@
       border: 1px solid #cce0ff;
       border-radius: 8px;
       background-color: #f9fcff;
-      transition: all 0.3s ease;
     }
-    input:focus, select:focus {
-      border-color: #66aaff;
-      box-shadow: 0 0 5px rgba(102, 170, 255, 0.6);
-      outline: none;
-    }
+
     input[type="submit"] {
       background-color: #00000087;
       color: white;
-      font-size: 16px;
+      border: none;
       cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
     }
-    input[type="submit"]:hover {
-      background-color: #005bb5;
-      transform: scale(1.05);
+
+    .botones {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 30px auto;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    .btn {
+      background-color: #ffffff22;
+      color: white;
+      text-decoration: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      border: 2px solid #ffffff55;
+    }
+
+    .btn:hover {
+      background-color: #ffffff55;
+      color: #000;
     }
   </style>
-  <script>
-    function updateMaterias() {
-      // Lógica para mostrar materias según programa (puedes usar AJAX en una versión dinámica futura)
-      const materias = {
-        "1": ["Materia A", "Materia B", "Materia C"],
-        "2": ["Materia D", "Materia E", "Materia F"]
-      };
-      const programa = document.getElementById('programa_id').value;
-      for (let i = 1; i <= 7; i++) {
-        const select = document.getElementById('materia' + i);
-        select.innerHTML = '<option value="">Seleccione una materia</option>';
-        if (materias[programa]) {
-          materias[programa].forEach((m, index) => {
-            const option = document.createElement('option');
-            option.value = index + 1;
-            option.text = m;
-            select.appendChild(option);
-          });
-        }
-      }
-    }
-  </script>
 </head>
 <body>
-  <img src="../assets/images/Banner-Universidad-Santiago-de-Cali-USC-1.png" alt="Banner USC" class="banner-img">
+
+  <img src="../img/Banner-Universidad-Santiago-de-Cali-USC-1.png" alt="Banner USC" class="banner-img" />
+
   <h1>Formulario de Inscripción USC</h1>
-  <form action="../controllers/inscripcion.php" method="post">
-    <label>Edad:</label>
-    <input type="number" name="edad" required>
-    <label>Género:</label>
-    <select name="genero" required>
-      <option value="Mujer">Mujer</option>
-      <option value="Hombre">Hombre</option>
-      <option value="Otro">Otro</option>
-    </select>
-    <label>Número de Celular:</label>
-    <input type="text" name="numero_celular" required>
-    <label>Programa Académico:</label>
-    <select name="programa_id" id="programa_id" onchange="updateMaterias()" required>
+
+  <form method="POST" action="../controllers/inscribir.php">
+    <label for="nombre">Nombre completo:</label>
+    <input type="text" id="nombre" name="nombre" required />
+
+    <label for="codigo">Código estudiantil:</label>
+    <input type="number" id="codigo" name="codigo" required />
+
+    <label for="programa_id">Programa académico:</label>
+    <select id="programa_id" name="programa_id" required onchange="this.form.submit()">
       <option value="">Seleccione un programa</option>
-      <option value="1">Ingeniería Industrial</option>
-      <option value="2">Ingeniería en Sistemas</option>
+      <?php
+      include '../config/conexion.php';
+      $query = 'SELECT id, nombre FROM Programas';
+      $result = mysqli_query($conn, $query);
+      while ($row = mysqli_fetch_assoc($result)) {
+        $selected = isset($_POST['programa_id']) && $_POST['programa_id'] == $row['id'] ? 'selected' : '';
+        echo "<option value='{$row['id']}' $selected>{$row['nombre']}</option>";
+      }
+      ?>
     </select>
-    <label>Semestre a cursar:</label>
-    <input type="number" name="semestre" required>
-    <label>Jornada:</label>
-    <select name="jornada" required>
-      <option value="Diurna">Diurna</option>
-      <option value="Nocturna">Nocturna</option>
-      <option value="Mixta">Mixta</option>
-    </select>
-    <label>Materia 1:</label>
-    <select id="materia1" name="materia1"><option value="">Seleccione una materia</option></select>
-    <label>Materia 2:</label>
-    <select id="materia2" name="materia2"><option value="">Seleccione una materia</option></select>
-    <label>Materia 3:</label>
-    <select id="materia3" name="materia3"><option value="">Seleccione una materia</option></select>
-    <label>Materia 4:</label>
-    <select id="materia4" name="materia4"><option value="">Seleccione una materia</option></select>
-    <label>Materia 5:</label>
-    <select id="materia5" name="materia5"><option value="">Seleccione una materia</option></select>
-    <label>Materia 6:</label>
-    <select id="materia6" name="materia6"><option value="">Seleccione una materia</option></select>
-    <label>Materia 7:</label>
-    <select id="materia7" name="materia7"><option value="">Seleccione una materia</option></select>
-    <input type="submit" value="Enviar">
+
+    <?php if (isset($_POST['programa_id'])): ?>
+      <label for="materias">Materias que deseas inscribir:</label>
+      <select id="materias" name="materias[]" multiple required size="10">
+        <?php
+        $programa_id = intval($_POST['programa_id']);
+        $query = "SELECT id, nombre FROM Materias WHERE programa_id = $programa_id";
+        $result = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_assoc($result)) {
+          echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+        }
+        ?>
+      </select>
+      <br><br>
+      <input type="submit" value="Inscribirme">
+    <?php endif; ?>
   </form>
+
+  <div class="botones">
+    <a href="../views/login.html" class="btn">Iniciar Sesión</a>
+    <a href="../views/register.html" class="btn">Registrarse</a>
+  </div>
+
 </body>
 </html>
