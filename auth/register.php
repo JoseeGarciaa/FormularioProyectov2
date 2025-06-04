@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("sssss", $nombre, $apellido, $identificacion, $correo, $contrasena);
     
     if ($stmt->execute()) {
-        header("Location: ../views/register.html?status=ok");
+        header("Location: ../views/register.php?status=ok");
         exit();
     } else {
         header("Location: ../views/register.html?status=error");
