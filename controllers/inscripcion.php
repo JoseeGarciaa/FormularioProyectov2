@@ -1,41 +1,70 @@
 <?php
 session_start();
-require_once '../config/database.php';
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $usuario_id = $_SESSION['usuario_id'];
-    $edad = $_POST['edad'];
-    $genero = $_POST['genero'];
-    $numero_celular = $_POST['numero_celular'];
-    $programa_id = $_POST['programa_id'];
-    $semestre = $_POST['semestre'];
-    $jornada = $_POST['jornada'];
-    $fecha = date("Y-m-d");
-
-    // Insertar inscripción
-    $sql = "INSERT INTO Inscripciones (usuario_id, edad, genero, numero_celular, programa_id, semestre, jornada, fecha)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iisssiss", $usuario_id, $edad, $genero, $numero_celular, $programa_id, $semestre, $jornada, $fecha);
-
-    if ($stmt->execute()) {
-        $inscripcion_id = $stmt->insert_id;
-        // Guardar materias seleccionadas
-        for ($i = 1; $i <= 7; $i++) {
-            if (!empty($_POST["materia$i"])) {
-                $materia_id = $_POST["materia$i"];
-                $sql_materia = "INSERT INTO MateriasInscritas (inscripcion_id, materia_id) VALUES (?, ?)";
-                $stmt_materia = $conn->prepare($sql_materia);
-                $stmt_materia->bind_param("ii", $inscripcion_id, $materia_id);
-                $stmt_materia->execute();
-                $stmt_materia->close();
-            }
-        }
-        echo "<p style='text-align:center; color:green;'>Inscripción realizada con éxito.</p>";
-    } else {
-        echo "<p style='text-align:center; color:red;'>Error al inscribir: " . $stmt->error . "</p>";
-    }
-    $stmt->close();
-    $conn->close();
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: ../views/login.html");
+    exit();
 }
-?>
+
+include '../config/conexion.php';
+
+$usuario_id = $_SESSION['usuario_id'];
+$edad = $_POST['edad'];
+$genero = $_POST['genero'];
+$numero_celular = $_POST['numero_celular'];
+$programa_id = $_POST['programa_id'];
+$semestre = $_POST['semestre'];
+$jornada = $_POST['jornada'];
+$fecha = $_POST['fecha'];
+
+$materias = [];
+for ($i = 1; $i <= 7; $i++) {
+    $materias[] = isset($_POST["materia$i"]) ? $_POST["materia$i"] : null;
+}
+
+// Validar si ya existe inscripción para ese usuario y semestre
+$query = "SELECT id FROM Inscripciones WHERE usuario_id = ? AND semestre = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("ii", $usuario_id, $semestre);
+$stmt->execute();
+$stmt->store_result();
+
+if ($stmt->num_rows > 0) {
+    echo "<script>alert('Ya has realizado una inscripción para este semestre.'); window.location.href = '../views/bienvenida.php';</script>";
+    exit();
+}
+$stmt->close();
+
+// Insertar nueva inscripción
+$query = "INSERT INTO Inscripciones 
+(usuario_id, edad, genero, numero_celular, programa_id, semestre, jornada, fecha, 
+ Materia1, Materia2, Materia3, Materia4, Materia5, Materia6, Materia7) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param(
+    "iississsssssss",
+    $usuario_id,
+    $edad,
+    $genero,
+    $numero_celular,
+    $programa_id,
+    $semestre,
+    $jornada,
+    $fecha,
+    $materias[0],
+    $materias[1],
+    $materias[2],
+    $materias[3],
+    $materias[4],
+    $materias[5],
+    $materias[6]
+);
+
+if ($stmt->execute()) {
+    echo "<script>alert('Inscripción exitosa'); window.location.href = '../views/bienvenida.php';</script>";
+} else {
+    echo "Error al inscribir: " . $stmt->error;
+}
+
+$stmt->close();
+$conn->close();
