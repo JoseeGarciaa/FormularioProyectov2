@@ -57,9 +57,40 @@
       color: #66aaff;
       text-decoration: none;
     }
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  z-index: 1000;
+  opacity: 0.95;
+  animation: fadeOut 4s forwards;
+}
+.toast.error { background-color: #dc3545; }
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}
+
+    
   </style>
 </head>
 <body>
+
+  <?php if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
+  <div class="toast error">
+    ❌ Correo o contraseña incorrectos.
+  </div>
+<?php endif; ?>
+
   <div class="container">
     <h2>Iniciar Sesión</h2>
     <form action="../auth/login.php" method="POST">
