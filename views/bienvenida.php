@@ -95,7 +95,7 @@ if (!isset($_SESSION['nombre'])) {
   <div class="subtitulo">Hola, <strong><?php echo $_SESSION['nombre']; ?></strong> 👋</div>
 
   <div class="botones">
-    <a href="indexform.html" class="btn">Inscribir Materias</a>
+    <a href="indexform.php" class="btn">Inscribir Materias</a>
     <a href="../auth/logout.php" class="btn">Cerrar Sesión</a>
   </div>
 
