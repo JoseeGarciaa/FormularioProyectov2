@@ -24,9 +24,10 @@ $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows > 0) {
-    echo "❌ Ya existe una inscripción para este semestre.";
+    header("Location: ../views/indexform.php?status=exists");
     exit();
 }
+
 $stmt->close();
 
 // Recoger materias del formulario
@@ -52,9 +53,11 @@ $stmt->bind_param(
 );
 
 if ($stmt->execute()) {
-    echo "✅ Inscripción realizada correctamente.";
+    header("Location: ../views/indexform.php?status=ok");
 } else {
-    echo "❌ Error al inscribir: " . $stmt->error;
+    header("Location: ../views/indexform.php?status=error");
 }
+exit();
+
 $stmt->close();
 ?>
