@@ -14,7 +14,7 @@ $numero_celular = $_POST['numero_celular'];
 $programa_id = $_POST['programa_id'];
 $semestre = $_POST['semestre'];
 $jornada = $_POST['jornada'];
-$fecha = date('Y-m-d'); // Se genera automáticamente
+$fecha = date('Y-m-d'); // se genera automáticamente
 
 // Validar si ya existe una inscripción para ese usuario y semestre
 $verificar_sql = "SELECT id FROM Inscripciones WHERE usuario_id = ? AND semestre = ?";
@@ -24,28 +24,19 @@ $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows > 0) {
-    echo "Ya existe una inscripción para este semestre.";
+    echo "❌ Ya existe una inscripción para este semestre.";
     exit();
 }
 $stmt->close();
 
-// Insertar inscripción
-$insert_sql = "INSERT INTO Inscripciones (usuario_id, edad, genero, numero_celular, programa_id, semestre, jornada, fecha)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($insert_sql);
-$stmt->bind_param("iisssiss", $usuario_id, $edad, $genero, $numero_celular, $programa_id, $semestre, $jornada, $fecha);
-$stmt->execute();
-$inscripcion_id = $stmt->insert_id;
-$stmt->close();
-
-// Insertar materias si están definidas
+// Recoger materias del formulario
 $materias = [];
 for ($i = 1; $i <= 7; $i++) {
     $campo = "materia$i";
     $materias[$i] = !empty($_POST[$campo]) ? $_POST[$campo] : null;
 }
 
-// Insertar directamente en Inscripciones
+// Insertar todos los datos en Inscripciones
 $insert_sql = "INSERT INTO Inscripciones (
     usuario_id, edad, genero, numero_celular, programa_id, semestre, jornada, fecha,
     materia1, materia2, materia3, materia4, materia5, materia6, materia7
@@ -66,6 +57,4 @@ if ($stmt->execute()) {
     echo "❌ Error al inscribir: " . $stmt->error;
 }
 $stmt->close();
-
-echo "Inscripción realizada correctamente.";
 ?>
