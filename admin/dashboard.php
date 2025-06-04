@@ -2,7 +2,7 @@
 
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
-    header("Location: ../views/login.html");
+    header("Location: ../views/login.php");
     exit();
 }
 
