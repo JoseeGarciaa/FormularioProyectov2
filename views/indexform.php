@@ -18,9 +18,6 @@ while ($row = $result->fetch_assoc()) {
 }
 ?>
 
-<?php ob_end_flush(); ?>
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
