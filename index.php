@@ -87,7 +87,7 @@ if (isset($_SESSION['nombre'])) {
 
   <div class="botones">
     <a href="views/login.html" class="btn">Iniciar Sesión</a>
-    <a href="views/register.html" class="btn">Registrarse</a>
+    <a href="views/register.php" class="btn">Registrarse</a>
   </div>
 </body>
 </html>
