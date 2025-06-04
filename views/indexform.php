@@ -114,7 +114,35 @@ while ($row = $result->fetch_assoc()) {
     select option:hover {
       background-color: #e6f3ff;
     }
+
+       .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 1000;
+      opacity: 0.95;
+      animation: fadeOut 4s forwards;
+    }
+
+    .toast.ok { background-color: #28a745; }
+    .toast.exists { background-color: #ffc107; color: #000; }
+    .toast.error { background-color: #dc3545; }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+      
   </style>
+ 
+   
   <script>
     function cargarMaterias(programaId) {
       if (!programaId) return;
@@ -137,6 +165,26 @@ while ($row = $result->fetch_assoc()) {
 </head>
 <body>
   <img src="../assets/images/Banner-Universidad-Santiago-de-Cali-USC-1.png" alt="Banner USC" class="banner-img">
+
+<?php if (isset($_GET['status'])): ?>
+  <div class="toast <?= htmlspecialchars($_GET['status']) ?>">
+    <?php
+      switch ($_GET['status']) {
+        case 'ok':
+          echo '✅ Inscripción realizada correctamente.';
+          break;
+        case 'exists':
+          echo '⚠️ Ya existe una inscripción para este semestre.';
+          break;
+        case 'error':
+          echo '❌ Ocurrió un error al inscribir.';
+          break;
+      }
+    ?>
+  </div>
+<?php endif; ?>
+
+    
   <h1>Formulario de Inscripción USC</h1>
   <form method="POST" action="../controllers/inscripcion.php">
     <label>Edad:</label>
