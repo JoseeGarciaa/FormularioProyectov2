@@ -18,7 +18,7 @@ try {
     
     // Obtener el mes actual para mostrar inscripciones del mes
     $mes_actual = date('Y-m-01');
-    $inscripciones_mes = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE fecha_registro >= '$mes_actual'")->fetch_assoc()['total'];
+    $inscripciones_mes = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE fecha >= '$mes_actual'")->fetch_assoc()['total'];
     
 } catch (Exception $e) {
     $error = "Error al cargar estadísticas: " . $e->getMessage();
