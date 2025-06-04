@@ -1,5 +1,6 @@
-
 <?php
+ob_start(); // Inicia el búfer de salida
+
 session_start();
 include __DIR__ . '/../config/database.php';
 
@@ -16,6 +17,10 @@ while ($row = $result->fetch_assoc()) {
     $programas[] = $row;
 }
 ?>
+
+<?php ob_end_flush(); ?>
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
