@@ -1,25 +1,3 @@
-<?php
-session_start();
-
-// Verifica que el usuario sea admin
-if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
-    header("Location: ../views/login.html");
-    exit();
-}
-
-require_once '../config/database.php';
-
-// Obtener todos los usuarios (estudiantes)
-$sql = "SELECT u.nombre, u.apellido, u.numero_identificacion, u.correo,
-               i.semestre, i.jornada, i.fecha,
-               i.materia1, i.materia2, i.materia3, i.materia4, i.materia5, i.materia6, i.materia7
-        FROM Usuarios u
-        LEFT JOIN Inscripciones i ON u.id = i.usuario_id
-        WHERE u.rol = 'estudiante'";
-
-$resultado = $conn->query($sql);
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -27,86 +5,104 @@ $resultado = $conn->query($sql);
   <title>Panel de Administrador - USC</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      padding: 20px;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
     }
-    h1 {
+    header {
+      background: #0f3460;
+      padding: 20px;
       text-align: center;
-      color: #333;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #f7c59f;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      background-color: white;
+      margin-bottom: 30px;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
       text-align: left;
-    }
-    th {
-      background-color: #001f87;
       color: white;
     }
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
+    th {
+      background-color: #1f4068;
     }
-    .logout {
-      text-align: right;
-      margin-bottom: 10px;
+    tr:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
-    .logout a {
-      color: #c00;
-      text-decoration: none;
-      font-weight: bold;
+    .btn {
+      padding: 8px 16px;
+      background-color: #e94560;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #ff2e54;
     }
   </style>
 </head>
 <body>
-  <div class="logout">
-    <a href="../auth/logout.php">Cerrar sesión</a>
-  </div>
-  <h1>Panel de Administrador - Inscripciones</h1>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Identificación</th>
-        <th>Correo</th>
-        <th>Semestre</th>
-        <th>Jornada</th>
-        <th>Fecha</th>
-        <th>Materias</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php while ($row = $resultado->fetch_assoc()): ?>
+  <header>Panel de Control - Administrador</header>
+  <div class="container">
+    <h2>Lista de Estudiantes Inscritos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Programa</th>
+          <th>Semestre</th>
+          <th>Materias</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aquí se cargarán dinámicamente los estudiantes -->
+        <?php
+        require_once '../config/database.php';
+        $sql = "SELECT u.nombre, u.correo, i.semestre, p.nombre AS programa,
+                       i.materia1, i.materia2, i.materia3, i.materia4, i.materia5, i.materia6, i.materia7, i.id
+                FROM Inscripciones i
+                JOIN Usuarios u ON i.usuario_id = u.id
+                JOIN Programas p ON i.programa_id = p.id";
+        $result = $conn->query($sql);
+        while ($row = $result->fetch_assoc()):
+          $materias = array_filter([
+            $row['materia1'], $row['materia2'], $row['materia3'],
+            $row['materia4'], $row['materia5'], $row['materia6'], $row['materia7']
+          ]);
+        ?>
         <tr>
           <td><?= htmlspecialchars($row['nombre']) ?></td>
-          <td><?= htmlspecialchars($row['apellido']) ?></td>
-          <td><?= htmlspecialchars($row['numero_identificacion']) ?></td>
           <td><?= htmlspecialchars($row['correo']) ?></td>
+          <td><?= htmlspecialchars($row['programa']) ?></td>
           <td><?= htmlspecialchars($row['semestre']) ?></td>
-          <td><?= htmlspecialchars($row['jornada']) ?></td>
-          <td><?= htmlspecialchars($row['fecha']) ?></td>
-          <td>
-            <?php
-              $materias = [];
-              for ($i = 1; $i <= 7; $i++) {
-                if (!empty($row['materia'.$i])) {
-                  $materias[] = $row['materia'.$i];
-                }
-              }
-              echo implode(', ', $materias);
-            ?>
-          </td>
+          <td><?= implode(', ', $materias) ?></td>
+          <td><a class="btn" href="eliminar_inscripcion.php?id=<?= $row['id'] ?>">Eliminar</a></td>
         </tr>
-      <?php endwhile; ?>
-    </tbody>
-  </table>
+        <?php endwhile; ?>
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>
