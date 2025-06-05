@@ -1,4 +1,4 @@
-<?php /*
+<?php 
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -13,7 +13,7 @@ $programas = [
   ['id' => 2, 'nombre' => 'Administración de Empresas', 'codigo' => 'AE', 'duracion' => '8 Semestres', 'estado' => 'Activo'],
   ['id' => 3, 'nombre' => 'Psicología', 'codigo' => 'PSI', 'duracion' => '9 Semestres', 'estado' => 'Activo'],
   // Agrega más programas según sea necesario
-]; */
+]; 
 ?>
 <!DOCTYPE html>
 <html lang="es">
