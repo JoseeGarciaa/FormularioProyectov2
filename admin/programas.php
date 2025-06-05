@@ -61,9 +61,16 @@ if (isset($_GET['eliminar'])) {
     }
     
     .dashboard-container {
-      max-width: 95%;
-      margin: 2rem auto;
-      padding: 1.5rem;
+      width: 100%;
+      max-width: 1400px;
+      margin: 1rem auto;
+      padding: 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .dashboard-container {
+        padding: 1.5rem;
+      }
     }
     
     .card {
@@ -76,11 +83,19 @@ if (isset($_GET['eliminar'])) {
     
     .header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
       gap: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
     }
     
     .header h1 {
@@ -93,14 +108,25 @@ if (isset($_GET['eliminar'])) {
       background-color: #6c757d;
       color: white;
       border: none;
-      padding: 0.5rem 1.5rem;
+      padding: 0.5rem 1rem;
       border-radius: 50px;
       font-weight: 500;
       transition: all 0.3s ease;
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       text-decoration: none;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .btn-back {
+        width: auto;
+        padding: 0.5rem 1.5rem;
+        margin-bottom: 0;
+      }
     }
     
     .btn-back:hover {
@@ -215,6 +241,90 @@ if (isset($_GET['eliminar'])) {
       .programa-actions {
         width: 100%;
         justify-content: flex-end;
+      }
+    }
+    
+    .table-responsive {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -0.75rem;
+      width: calc(100% + 1.5rem);
+    }
+    
+    @media (min-width: 768px) {
+      .table-responsive {
+        margin: 0;
+        width: 100%;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+    }
+    
+    .table thead th {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .table td {
+      padding: 0.75rem;
+      vertical-align: middle;
+    }
+    
+    @media (min-width: 768px) {
+      .table thead th {
+        padding: 1rem;
+      }
+      
+      .table td {
+        padding: 1rem;
+      }
+    }
+    
+    .table {
+      margin-bottom: 0;
+      min-width: 600px;
+    }
+    
+    /* Ajustes para móviles */
+    @media (max-width: 767.98px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .btn {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
+      
+      .table-responsive {
+        border-radius: 0;
+        margin: 0 -0.75rem;
+        width: calc(100% + 1.5rem);
+      }
+      
+      .modal-dialog {
+        margin: 0.5rem;
+      }
+    }
+    
+    /* Ajustes para tablets pequeñas */
+    @media (min-width: 576px) and (max-width: 767.98px) {
+      .btn {
+        padding: 0.5rem 1rem;
+      }
+    }
+    
+    /* Ajustes para tablets */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .dashboard-container {
+        padding: 1.25rem;
       }
     }
   </style>
