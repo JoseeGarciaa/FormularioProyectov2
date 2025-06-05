@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -160,7 +160,19 @@ $result = $conn->query($sql);
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.3rem;
+      white-space: nowrap;
+    }
+    
+    .btn-primary, .btn-success {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 500;
+      transition: all 0.3s ease;
     }
     
     .btn-logout:hover {
@@ -190,9 +202,17 @@ $result = $conn->query($sql);
   <div class="dashboard-container">
     <div class="header">
       <h1><i class="bi bi-speedometer2 me-2"></i> Panel de Administración</h1>
-      <a href="../auth/logout.php" class="btn btn-logout">
-        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-      </a>
+      <div class="d-flex gap-2">
+        <a href="materias.php" class="btn btn-primary">
+          <i class="bi bi-book me-1"></i> Materias
+        </a>
+        <a href="programas.php" class="btn btn-success">
+          <i class="bi bi-collection me-1"></i> Programas
+        </a>
+        <a href="../auth/logout.php" class="btn btn-logout">
+          <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+        </a>
+      </div>
     </div>
     
     <div class="row mb-4">
