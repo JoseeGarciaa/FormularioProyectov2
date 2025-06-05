@@ -4,21 +4,21 @@
   <meta charset="UTF-8">
   <title>Registro de Usuario - USC</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(90deg, #001f87, #630000);
-      color: white;
-      margin: 0;
-      padding: 0;
-    }
+   body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(90deg, #001f87, #630000);
+    color: #001f87;
+    margin: 0;
+    padding: 0;
+}
     .container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: rgba(0,0,0,0.6);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,1.2);
-    }
+    max-width: 400px;
+    margin: 50px auto;
+    background: rgb(255 255 255);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 1.2);
+}
     h2 {
       text-align: center;
       margin-bottom: 25px;
@@ -28,24 +28,25 @@
       margin: 10px 0 5px;
     }
     input[type="text"], input[type="email"], input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-    }
-    input[type="submit"] {
-      background-color: #221559;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+    width: 100%;
+    padding: 10px;
+    background: rgb(233 233 233);
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+input[type="submit"] {
+    background-color: #001f87;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
     input[type="submit"]:hover {
       background-color: #3e16d1;
     }
