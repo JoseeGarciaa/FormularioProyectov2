@@ -18,7 +18,7 @@ $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semes
         FROM Inscripciones i
         JOIN Usuarios u ON i.usuario_id = u.id
         ORDER BY i.id DESC";
-$result = $conn->query($sql);
+$result = $conn->query($sql); 
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -42,9 +42,16 @@ $result = $conn->query($sql);
     }
     
     .dashboard-container {
-      max-width: 95%;
-      margin: 2rem auto;
-      padding: 1.5rem;
+      width: 100%;
+      max-width: 1400px;
+      margin: 1rem auto;
+      padding: 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .dashboard-container {
+        padding: 1.5rem;
+      }
     }
     
     .card {
@@ -62,21 +69,43 @@ $result = $conn->query($sql);
     
     .stat-card {
       text-align: center;
-      padding: 1.5rem;
+      padding: 1.25rem 0.75rem;
       color: white;
-      border-radius: 15px;
+      border-radius: 12px;
       background: linear-gradient(45deg, #4a90e2, #5ab0ff);
+      margin-bottom: 1rem;
+      height: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .stat-card {
+        padding: 1.5rem;
+        margin-bottom: 0;
+      }
     }
     
     .stat-card i {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .stat-card i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
     }
     
     .stat-card h3 {
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 700;
       margin: 0.5rem 0;
+    }
+    
+    @media (min-width: 768px) {
+      .stat-card h3 {
+        font-size: 2rem;
+      }
     }
     
     .stat-card p {
@@ -102,46 +131,88 @@ $result = $conn->query($sql);
     
     .table-responsive {
       background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -0.75rem;
+      width: calc(100% + 1.5rem);
+    }
+    
+    @media (min-width: 768px) {
+      .table-responsive {
+        margin: 0;
+        width: 100%;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
     }
     
     .table {
       margin-bottom: 0;
     }
     
+    .table {
+      margin-bottom: 0;
+      min-width: 600px;
+    }
+    
     .table thead th {
       background-color: var(--primary-color);
       color: white;
       border: none;
-      padding: 1rem;
+      padding: 0.75rem;
       font-weight: 500;
-    }
-    
-    .table tbody tr:hover {
-      background-color: rgba(74, 144, 226, 0.1);
+      white-space: nowrap;
     }
     
     .table td {
-      padding: 1rem;
+      padding: 0.75rem;
       vertical-align: middle;
     }
     
+    @media (min-width: 768px) {
+      .table thead th {
+        padding: 1rem;
+      }
+      
+      .table td {
+        padding: 1rem;
+      }
+    }
+    
+    .table tbody tr:hover {
+      background-color: rgba(74, 144, 226, 0.05);
+    }
+    
     .materias-cell {
-      max-width: 300px;
+      max-width: 200px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     
+    @media (min-width: 992px) {
+      .materias-cell {
+        max-width: 300px;
+      }
+    }
+    
     .header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
       gap: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
     }
     
     .header h1 {
@@ -154,25 +225,46 @@ $result = $conn->query($sql);
       background-color: #ff4d4d;
       color: white;
       border: none;
-      padding: 0.5rem 1.5rem;
+      padding: 0.5rem 1rem;
       border-radius: 50px;
       font-weight: 500;
       transition: all 0.3s ease;
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.3rem;
       white-space: nowrap;
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .btn-logout {
+        width: auto;
+        padding: 0.5rem 1.5rem;
+      }
     }
     
     .btn-primary, .btn-success {
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.3rem;
       white-space: nowrap;
-      padding: 0.5rem 1.5rem;
+      padding: 0.5rem 1rem;
       border-radius: 50px;
       font-weight: 500;
       transition: all 0.3s ease;
+      text-align: center;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .btn-primary, .btn-success {
+        width: auto;
+        padding: 0.5rem 1.5rem;
+        margin-bottom: 0;
+      }
     }
     
     .btn-logout:hover {
@@ -181,19 +273,39 @@ $result = $conn->query($sql);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
     
-    @media (max-width: 768px) {
-      .dashboard-container {
+    /* Ajustes para móviles */
+    @media (max-width: 767.98px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .btn {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
+      
+      .stat-card {
+        margin-bottom: 1rem;
+      }
+      
+      .table-responsive {
+        border-radius: 0;
+        margin: 0 -0.75rem;
+        width: calc(100% + 1.5rem);
+      }
+    }
+    
+    /* Ajustes para tablets pequeñas */
+    @media (min-width: 576px) and (max-width: 767.98px) {
+      .stat-card {
         padding: 1rem;
       }
-      
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      
-      .gender-stats {
-        flex-direction: column;
-        gap: 1rem;
+    }
+    
+    /* Ajustes para tablets */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .dashboard-container {
+        padding: 1.25rem;
       }
     }
   </style>
