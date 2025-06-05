@@ -73,8 +73,10 @@
   animation: fadeOut 4s forwards;
 }
 
-.toast.ok { background-color: #28a745; }
-.toast.exists { background-color: #ffc107; color: #000; }
+.toast.exito { background-color: #28a745; }
+.toast.correo_existe { background-color: #ffc107; color: #000; }
+.toast.identificacion_existe { background-color: #ffc107; color: #000; }
+.toast.ambos_existen { background-color: #dc3545; }
 .toast.error { background-color: #dc3545; }
 
 @keyframes fadeOut {
@@ -90,11 +92,17 @@
   <div class="toast <?= htmlspecialchars($_GET['status']) ?>">
     <?php
       switch ($_GET['status']) {
-        case 'ok':
+        case 'exito':
           echo '✅ Registro exitoso. Ya puedes iniciar sesión.';
           break;
-        case 'exists':
-          echo '⚠️ El correo ya está registrado.';
+        case 'correo_existe':
+          echo '⚠️ El correo electrónico ya está registrado.';
+          break;
+        case 'identificacion_existe':
+          echo '⚠️ El número de identificación ya está registrado.';
+          break;
+        case 'ambos_existen':
+          echo '❌ El correo y el número de identificación ya están registrados.';
           break;
         case 'error':
           echo '❌ Error al registrar. Intenta de nuevo.';
@@ -104,7 +112,6 @@
   </div>
 <?php endif; ?>
 
-  
   <div class="container">
     <h2>Registro de Usuario</h2>
     <form action="../auth/register.php" method="POST">
