@@ -11,14 +11,14 @@ require_once '../config/database.php';
 $total_estudiantes = $conn->query("SELECT COUNT(*) as total FROM Inscripciones")->fetch_assoc()['total'];
 $total_masculino = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Masculino'")->fetch_assoc()['total'];
 $total_femenino = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Femenino'")->fetch_assoc()['total'];
-$total_otro = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Otro'")->fetch_assoc()['total'];
+
 // Traer inscripciones con nombre del usuario y materias
 $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semestre, i.jornada,
                i.Materia1, i.Materia2, i.Materia3, i.Materia4, i.Materia5, i.Materia6, i.Materia7
         FROM Inscripciones i
         JOIN Usuarios u ON i.usuario_id = u.id
         ORDER BY i.id DESC";
-$result = $conn->query($sql); 
+$result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -69,12 +69,17 @@ $result = $conn->query($sql);
     
     .stat-card {
       text-align: center;
-      padding: 1.25rem 0.75rem;
+      padding: 1.5rem 0.75rem;
       color: white;
       border-radius: 12px;
       background: linear-gradient(45deg, #4a90e2, #5ab0ff);
-      margin-bottom: 1rem;
       height: 100%;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
     }
     
     @media (min-width: 768px) {
@@ -327,32 +332,32 @@ $result = $conn->query($sql);
       </div>
     </div>
     
-    <div class="row mb-4">
-      <div class="col-md-4">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-md-3">
         <div class="stat-card">
           <i class="bi bi-people"></i>
           <h3><?= $total_estudiantes ?></h3>
           <p>Total Estudiantes</p>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-12 col-sm-6 col-md-3">
         <div class="stat-card" style="background: linear-gradient(45deg, #ff6b6b, #ff8e8e);">
           <i class="bi bi-gender-male"></i>
           <h3><?= $total_masculino ?></h3>
           <p>Hombres</p>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-12 col-sm-6 col-md-3">
         <div class="stat-card" style="background: linear-gradient(45deg, #6c5ce7, #a29bfe);">
           <i class="bi bi-gender-female"></i>
           <h3><?= $total_femenino ?></h3>
           <p>Mujeres</p>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="stat-card otro" style="background: linear-gradient(45deg, #8e44ad, #9b59b6);">
-          <i class="bi bi-gender-ambiguous"></i>
-          <h3><?= $total_otro ?></h3>
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="stat-card" style="background: linear-gradient(45deg, #00b894, #55efc4);">
+          <i class="bi bi-people-fill"></i>
+          <h3><?= $total_estudiantes - $total_masculino - $total_femenino ?></h3>
           <p>Otro</p>
         </div>
       </div>
