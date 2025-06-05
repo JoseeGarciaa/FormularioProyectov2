@@ -372,7 +372,7 @@ if (isset($_GET['eliminar'])) {
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="card-title mb-0">Listado de Programas Académicos</h5>
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#programaModal">
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#programaModal" id="btnNuevoPrograma">
             <i class="bi bi-plus-lg"></i> Nuevo Programa
           </button>
         </div>
@@ -484,16 +484,41 @@ if (isset($_GET['eliminar'])) {
 document.addEventListener('DOMContentLoaded', function() {
     var myModal = new bootstrap.Modal(document.getElementById('programaModal'));
     myModal.show();
+    
+    // Cambiar el título del modal a "Editar Programa"
+    document.getElementById('programaModalLabel').textContent = 'Editar Programa';
+    
+    // Cambiar el texto del botón de guardar a "Actualizar"
+    var submitBtn = document.querySelector('#programaModal button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.textContent = 'Actualizar';
+    }
 });
 <?php endif; ?>
 
-// Limpiar el formulario al cerrar el modal si no estamos editando
-document.getElementById('programaModal').addEventListener('hidden.bs.modal', function () {
-    if (!<?= $programa_editar ? 'true' : 'false' ?>) {
-        this.querySelector('form').reset();
+// Manejar el clic en el botón "Nuevo Programa"
+document.getElementById('btnNuevoPrograma').addEventListener('click', function(e) {
+    // Si estamos en modo edición, redirigir a la página sin parámetros de edición
+    if (window.location.search.includes('editar=')) {
+        e.preventDefault();
+        window.location.href = 'programas.php';
     } else {
-        // Si estábamos editando, redirigir para limpiar la URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Limpiar el formulario
+        var form = document.querySelector('#programaModal form');
+        if (form) form.reset();
+        // Asegurarse de que el título sea "Nuevo Programa"
+        var modalTitle = document.getElementById('programaModalLabel');
+        if (modalTitle) modalTitle.textContent = 'Nuevo Programa';
+        // Asegurarse de que el botón diga "Guardar"
+        var submitBtn = document.querySelector('#programaModal button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Guardar';
+    }
+});
+
+// Limpiar la URL al cerrar el modal si estábamos editando
+document.getElementById('programaModal').addEventListener('hidden.bs.modal', function () {
+    if (window.location.search.includes('editar=')) {
+        window.history.replaceState({}, document.title, window.location.pathname + (window.location.search.includes('programa_id=') ? '?programa_id=' + new URLSearchParams(window.location.search).get('programa_id') : ''));
     }
 });
 </script>
