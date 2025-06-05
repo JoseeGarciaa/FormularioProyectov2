@@ -135,8 +135,10 @@
       color: white;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
       z-index: 1000;
-      opacity: 0.95;
+      opacity: 1;
+      display: block !important;
       animation: fadeOut 4s forwards;
+      animation-fill-mode: forwards;
     }
     
     .toast.error { 
