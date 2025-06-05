@@ -1,4 +1,4 @@
-<?php 
+<?php /*
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -18,7 +18,7 @@ $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semes
         FROM Inscripciones i
         JOIN Usuarios u ON i.usuario_id = u.id
         ORDER BY i.id DESC";
-$result = $conn->query($sql);
+$result = $conn->query($sql); */
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -72,7 +72,7 @@ $result = $conn->query($sql);
       padding: 1.5rem 0.75rem;
       color: white;
       border-radius: 12px;
-      background: linear-gradient(45deg, #4a90e2, #5ab0ff);
+      background: linear-gradient(45deg,rgb(255, 136, 0),rgb(255, 170, 72));
       height: 100%;
       min-height: 160px;
       display: flex;
@@ -341,21 +341,21 @@ $result = $conn->query($sql);
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-3">
-        <div class="stat-card" style="background: linear-gradient(45deg, #ff6b6b, #ff8e8e);">
+        <div class="stat-card" style="background: linear-gradient(45deg,rgb(107, 122, 255),rgb(142, 153, 255));">
           <i class="bi bi-gender-male"></i>
           <h3><?= $total_masculino ?></h3>
           <p>Hombres</p>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-3">
-        <div class="stat-card" style="background: linear-gradient(45deg, #6c5ce7, #a29bfe);">
+        <div class="stat-card" style="background: linear-gradient(45deg,rgb(231, 92, 219),rgb(254, 155, 241));">
           <i class="bi bi-gender-female"></i>
           <h3><?= $total_femenino ?></h3>
           <p>Mujeres</p>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-3">
-        <div class="stat-card" style="background: linear-gradient(45deg, #00b894, #55efc4);">
+        <div class="stat-card" style="background: linear-gradient(45deg,rgb(176, 182, 181),rgb(236, 236, 236));">
           <i class="bi bi-people-fill"></i>
           <h3><?= $total_estudiantes - $total_masculino - $total_femenino ?></h3>
           <p>Otro</p>
