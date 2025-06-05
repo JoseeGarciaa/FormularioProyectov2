@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -7,16 +7,50 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
 
 require_once '../config/database.php';
 
-// Obtener lista de materias (ejemplo, ajusta según tu base de datos)
-$materias_query = $conn->query("SELECT DISTINCT Materia1 as materia FROM Inscripciones WHERE Materia1 IS NOT NULL UNION 
-                                SELECT DISTINCT Materia2 FROM Inscripciones WHERE Materia2 IS NOT NULL UNION
-                                SELECT DISTINCT Materia3 FROM Inscripciones WHERE Materia3 IS NOT NULL UNION
-                                SELECT DISTINCT Materia4 FROM Inscripciones WHERE Materia4 IS NOT NULL UNION
-                                SELECT DISTINCT Materia5 FROM Inscripciones WHERE Materia5 IS NOT NULL UNION
-                                SELECT DISTINCT Materia6 FROM Inscripciones WHERE Materia6 IS NOT NULL UNION
-                                SELECT DISTINCT Materia7 FROM Inscripciones WHERE Materia7 IS NOT NULL
-                                ORDER BY materia");
+// Obtener programas para el filtro
+$programas = $conn->query("SELECT * FROM Programas ORDER BY nombre");
 
+// Obtener el programa seleccionado (si hay alguno)
+$programa_id = isset($_GET['programa_id']) ? intval($_GET['programa_id']) : 0;
+
+// Construir la consulta de materias
+$sql = "SELECT m.*, p.nombre as programa_nombre 
+        FROM Materias m 
+        JOIN Programas p ON m.programa_id = p.id";
+
+if ($programa_id > 0) {
+    $sql .= " WHERE m.programa_id = $programa_id";
+}
+
+$sql .= " ORDER BY p.nombre, m.nombre";
+
+$materias_query = $conn->query($sql);
+
+// Procesar formulario de agregar materia
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_materia'])) {
+    $nombre = $conn->real_escape_string($_POST['nombre']);
+    $programa_id = intval($_POST['programa_id']);
+    
+    $sql = "INSERT INTO Materias (nombre, programa_id) VALUES ('$nombre', $programa_id)";
+    if ($conn->query($sql)) {
+        header("Location: materias.php?success=1&programa_id=$programa_id");
+        exit();
+    } else {
+        $error = "Error al agregar la materia: " . $conn->error;
+    }
+}
+
+// Procesar eliminación de materia
+if (isset($_GET['eliminar'])) {
+    $id = intval($_GET['eliminar']);
+    $sql = "DELETE FROM Materias WHERE id = $id";
+    if ($conn->query($sql)) {
+        header("Location: materias.php?deleted=1");
+        exit();
+    } else {
+        $error = "No se pudo eliminar la materia porque está siendo utilizada en inscripciones.";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -177,40 +211,138 @@ $materias_query = $conn->query("SELECT DISTINCT Materia1 as materia FROM Inscrip
     <div class="card">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="card-title mb-0">Listado de Materias</h5>
-          <button class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Nueva Materia
-          </button>
+          <h5 class="card-title mb-0">
+            <?= $programa_id > 0 ? 'Materias del Programa: ' . $programas->fetch_assoc()['nombre'] : 'Todas las Materias' ?>
+          </h5>
+          <div class="d-flex gap-2">
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownProgramas" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-funnel"></i> Filtrar por Programa
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownProgramas">
+                <li><a class="dropdown-item" href="materias.php">Todos los Programas</a></li>
+                <?php 
+                // Reiniciar el puntero del resultado para volver a usarlo
+                $programas->data_seek(0);
+                while ($prog = $programas->fetch_assoc()): 
+                ?>
+                  <li><a class="dropdown-item <?= $programa_id == $prog['id'] ? 'active' : '' ?>" 
+                         href="materias.php?programa_id=<?= $prog['id'] ?>">
+                    <?= htmlspecialchars($prog['nombre']) ?>
+                  </a></li>
+                <?php endwhile; ?>
+              </ul>
+            </div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevaMateriaModal">
+              <i class="bi bi-plus-lg"></i> Nueva Materia
+            </button>
+          </div>
         </div>
         
-        <div class="row">
-          <?php while($materia = $materias_query->fetch_assoc()): ?>
-            <div class="col-md-6 col-lg-4 mb-3">
-              <div class="materia-card">
-                <div class="materia-header">
-                  <h3 class="materia-title"><?= htmlspecialchars($materia['materia']) ?></h3>
-                  <div class="btn-group">
-                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                  </div>
-                </div>
-                <div class="materia-stats">
-                  <div class="stat-item">
-                    <div class="stat-value">25</div>
-                    <div class="stat-label">Estudiantes</div>
-                  </div>
-                  <div class="stat-item">
-                    <div class="stat-value">3</div>
-                    <div class="stat-label">Grupos</div>
-                  </div>
-                  <div class="stat-item">
-                    <div class="stat-value">4.5</div>
-                    <div class="stat-label">Promedio</div>
-                  </div>
-                </div>
-              </div>
+        <?php if (isset($_GET['success'])): ?>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Materia <?= isset($_GET['edit']) ? 'actualizada' : 'agregada' ?> exitosamente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_GET['deleted'])): ?>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Materia eliminada exitosamente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+        
+        <?php if (isset($error)): ?>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars($error) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+        
+        <?php if ($materias_query->num_rows > 0): ?>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre de la Materia</th>
+                  <th>Programa</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php while($materia = $materias_query->fetch_assoc()): ?>
+                  <tr>
+                    <td><?= $materia['id'] ?></td>
+                    <td><?= htmlspecialchars($materia['nombre']) ?></td>
+                    <td><?= htmlspecialchars($materia['programa_nombre']) ?></td>
+                    <td class="d-flex gap-1">
+                      <a href="#" class="btn btn-sm btn-outline-secondary" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <a href="?eliminar=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-danger" 
+                         title="Eliminar" 
+                         onclick="return confirm('¿Está seguro de eliminar esta materia?')">
+                        <i class="bi bi-trash"></i>
+                      </a>
+                    </td>
+                  </tr>
+                <?php endwhile; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else: ?>
+          <div class="text-center py-5">
+            <div class="mb-3">
+              <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
             </div>
-          <?php endwhile; ?>
+            <h5 class="text-muted">
+              <?= $programa_id > 0 ? 'No hay materias registradas para este programa.' : 'No hay materias registradas.' ?>
+            </h5>
+            <?php if ($programa_id === 0): ?>
+              <p class="text-muted">Selecciona un programa para ver sus materias o crea una nueva materia.</p>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
+
+        <!-- Modal Nueva Materia -->
+        <div class="modal fade" id="nuevaMateriaModal" tabindex="-1" aria-labelledby="nuevaMateriaModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="nuevaMateriaModalLabel">Nueva Materia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form method="POST" action="">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre de la Materia</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="programa_id" class="form-label">Programa</label>
+                    <select class="form-select" id="programa_id" name="programa_id" required>
+                      <option value="">Seleccione un programa</option>
+                      <?php 
+                      // Reiniciar el puntero del resultado para volver a usarlo
+                      $programas->data_seek(0);
+                      while ($prog = $programas->fetch_assoc()): 
+                      ?>
+                        <option value="<?= $prog['id'] ?>" <?= $programa_id == $prog['id'] ? 'selected' : '' ?>>
+                          <?= htmlspecialchars($prog['nombre']) ?>
+                        </option>
+                      <?php endwhile; ?>
+                    </select>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" name="agregar_materia" class="btn btn-primary">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
