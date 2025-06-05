@@ -86,6 +86,27 @@ input[type="submit"] {
   100% { opacity: 0; display: none; }
 }
   </style>
+  <script>
+    function validarTerminos() {
+      const terminos = document.getElementById('terminos');
+      if (!terminos.checked) {
+        alert('Debes aceptar los términos y condiciones para continuar');
+        return false;
+      }
+      return true;
+    }
+
+    function mostrarTerminos() {
+      const mensaje = '🚨 TÉRMINOS Y CONDICIONES DE USO 🚨\n\n' +
+                    '🔒 Tus datos personales son importantes para nosotros. Al aceptar, confirmas que:\n\n' +
+                    '• La Universidad Santiago de Cali utilizará esta información exclusivamente para fines académicos y administrativos.\n' +
+                    '• Tus datos estarán protegidos según la normativa de protección de datos vigente.\n' +
+                    '• Podrás ejercer tus derechos ARCO (Acceso, Rectificación, Cancelación y Oposición) cuando lo desees.\n\n' +
+                    'Al hacer clic en "Aceptar", reconoces haber leído y estar de acuerdo con estos términos.';
+      
+      alert(mensaje);
+    }
+  </script>
 </head>
 <body>
 
@@ -126,7 +147,15 @@ input[type="submit"] {
       <input type="email" name="correo" required>
       <label>Contraseña:</label>
       <input type="password" name="contrasena" required>
-      <input type="submit" value="Registrarse">
+      
+      <div style="margin: 15px 0;">
+        <label style="display: flex; align-items: flex-start; cursor: pointer;">
+          <input type="checkbox" name="terminos" id="terminos" required style="width: auto; margin-right: 10px; margin-top: 3px;">
+          <span>Acepto los <a href="#" onclick="mostrarTerminos(); return false;" style="color: #001f87; text-decoration: underline;">términos y condiciones</a> de uso</span>
+        </label>
+      </div>
+      
+      <input type="submit" id="btnRegistrar" value="Registrarse" onclick="return validarTerminos();">
     </form>
     <div class="link">
       ¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a>
