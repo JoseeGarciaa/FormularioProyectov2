@@ -1,4 +1,4 @@
-<?php /*
+<?php 
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -16,7 +16,7 @@ $materias_query = $conn->query("SELECT DISTINCT Materia1 as materia FROM Inscrip
                                 SELECT DISTINCT Materia6 FROM Inscripciones WHERE Materia6 IS NOT NULL UNION
                                 SELECT DISTINCT Materia7 FROM Inscripciones WHERE Materia7 IS NOT NULL
                                 ORDER BY materia");
-*/
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
