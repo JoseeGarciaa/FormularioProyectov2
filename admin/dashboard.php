@@ -1,4 +1,4 @@
-<?php /*
+<?php 
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -18,7 +18,7 @@ $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semes
         FROM Inscripciones i
         JOIN Usuarios u ON i.usuario_id = u.id
         ORDER BY i.id DESC";
-$result = $conn->query($sql); */
+$result = $conn->query($sql); 
 ?>
 <!DOCTYPE html>
 <html lang="es">
