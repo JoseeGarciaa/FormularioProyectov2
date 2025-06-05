@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -7,13 +7,37 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
 
 require_once '../config/database.php';
 
-// Obtener lista de programas (ejemplo, ajusta según tu base de datos)
-$programas = [
-  ['id' => 1, 'nombre' => 'Ingeniería de Sistemas', 'codigo' => 'IS', 'duracion' => '10 Semestres', 'estado' => 'Activo'],
-  ['id' => 2, 'nombre' => 'Administración de Empresas', 'codigo' => 'AE', 'duracion' => '8 Semestres', 'estado' => 'Activo'],
-  ['id' => 3, 'nombre' => 'Psicología', 'codigo' => 'PSI', 'duracion' => '9 Semestres', 'estado' => 'Activo'],
-  // Agrega más programas según sea necesario
-]; 
+// Obtener lista de programas desde la base de datos
+$programas_query = $conn->query("SELECT * FROM Programas ORDER BY nombre");
+$programas = [];
+while ($row = $programas_query->fetch_assoc()) {
+    $programas[] = $row;
+}
+
+// Procesar formulario de agregar programa
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_programa'])) {
+    $nombre = $conn->real_escape_string($_POST['nombre']);
+    
+    $sql = "INSERT INTO Programas (nombre) VALUES ('$nombre')";
+    if ($conn->query($sql)) {
+        header("Location: programas.php?success=1");
+        exit();
+    } else {
+        $error = "Error al agregar el programa: " . $conn->error;
+    }
+}
+
+// Procesar eliminación de programa
+if (isset($_GET['eliminar'])) {
+    $id = intval($_GET['eliminar']);
+    $sql = "DELETE FROM Programas WHERE id = $id";
+    if ($conn->query($sql)) {
+        header("Location: programas.php?deleted=1");
+        exit();
+    } else {
+        $error = "No se pudo eliminar el programa porque tiene materias asociadas.";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -210,42 +234,93 @@ $programas = [
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="card-title mb-0">Listado de Programas Académicos</h5>
-          <button class="btn btn-success">
+          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoProgramaModal">
             <i class="bi bi-plus-lg"></i> Nuevo Programa
           </button>
         </div>
         
+        <?php if (isset($_GET['success'])): ?>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Programa agregado exitosamente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_GET['deleted'])): ?>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Programa eliminado exitosamente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+        
+        <?php if (isset($error)): ?>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars($error) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+        
         <div class="row">
-          <?php foreach($programas as $programa): ?>
-            <div class="col-12 mb-3">
-              <div class="programa-card">
-                <div class="programa-header">
-                  <div class="programa-info">
-                    <div class="programa-codigo"><?= htmlspecialchars($programa['codigo']) ?></div>
-                    <h3 class="programa-title"><?= htmlspecialchars($programa['nombre']) ?></h3>
-                    <div class="programa-duracion">
-                      <i class="bi bi-calendar-week"></i> <?= $programa['duracion'] ?>
-                    </div>
-                    <span class="programa-estado estado-<?= strtolower($programa['estado']) === 'activo' ? 'activo' : 'inactivo' ?>">
-                      <i class="bi <?= strtolower($programa['estado']) === 'activo' ? 'bi-check-circle' : 'bi-x-circle' ?>"></i>
-                      <?= $programa['estado'] ?>
-                    </span>
-                  </div>
-                  <div class="programa-actions">
-                    <button class="btn btn-outline-primary btn-icon" title="Editar">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-icon" title="Eliminar">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                    <button class="btn btn-primary btn-icon" title="Ver detalles">
-                      <i class="bi bi-arrow-right"></i>
-                    </button>
-                  </div>
+          <?php if (count($programas) > 0): ?>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre del Programa</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach($programas as $programa): ?>
+                    <tr>
+                      <td><?= htmlspecialchars($programa['id']) ?></td>
+                      <td><?= htmlspecialchars($programa['nombre']) ?></td>
+                      <td>
+                        <a href="materias.php?programa_id=<?= $programa['id'] ?>" class="btn btn-sm btn-primary" title="Ver materias">
+                          <i class="bi bi-book"></i> Materias
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary" title="Editar">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="?eliminar=<?= $programa['id'] ?>" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="return confirm('¿Está seguro de eliminar este programa?')">
+                          <i class="bi bi-trash"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          <?php else: ?>
+            <div class="text-center py-4">
+              <p class="text-muted">No hay programas registrados.</p>
+            </div>
+          <?php endif; ?>
+          
+          <!-- Modal Nuevo Programa -->
+          <div class="modal fade" id="nuevoProgramaModal" tabindex="-1" aria-labelledby="nuevoProgramaModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="nuevoProgramaModalLabel">Nuevo Programa</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <form method="POST" action="">
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label for="nombre" class="form-label">Nombre del Programa</label>
+                      <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" name="agregar_programa" class="btn btn-primary">Guardar</button>
+                  </div>
+                </form>
               </div>
             </div>
-          <?php endforeach; ?>
+          </div>
         </div>
       </div>
     </div>
