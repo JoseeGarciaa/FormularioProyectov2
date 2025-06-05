@@ -11,7 +11,7 @@ require_once '../config/database.php';
 $total_estudiantes = $conn->query("SELECT COUNT(*) as total FROM Inscripciones")->fetch_assoc()['total'];
 $total_masculino = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Masculino'")->fetch_assoc()['total'];
 $total_femenino = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Femenino'")->fetch_assoc()['total'];
-
+$total_otro = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Otro'")->fetch_assoc()['total'];
 // Traer inscripciones con nombre del usuario y materias
 $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semestre, i.jornada,
                i.Materia1, i.Materia2, i.Materia3, i.Materia4, i.Materia5, i.Materia6, i.Materia7
@@ -347,6 +347,13 @@ $result = $conn->query($sql);
           <i class="bi bi-gender-female"></i>
           <h3><?= $total_femenino ?></h3>
           <p>Mujeres</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card otro" style="background: linear-gradient(45deg, #8e44ad, #9b59b6);">
+          <i class="bi bi-gender-ambiguous"></i>
+          <h3><?= $total_otro ?></h3>
+          <p>Otro</p>
         </div>
       </div>
     </div>
