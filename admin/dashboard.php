@@ -12,12 +12,22 @@ $total_estudiantes = $conn->query("SELECT COUNT(*) as total FROM Inscripciones")
 $total_masculino = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Masculino'")->fetch_assoc()['total'];
 $total_femenino = $conn->query("SELECT COUNT(*) as total FROM Inscripciones WHERE genero = 'Femenino'")->fetch_assoc()['total'];
 
-// Traer inscripciones con nombre del usuario y materias
+// Configuración de paginación
+$registros_por_pagina = 10;
+$pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($pagina_actual - 1) * $registros_por_pagina;
+
+// Obtener el total de registros
+$total_registros = $conn->query("SELECT COUNT(*) as total FROM Inscripciones")->fetch_assoc()['total'];
+$total_paginas = ceil($total_registros / $registros_por_pagina);
+
+// Traer inscripciones con nombre del usuario y materias con paginación
 $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semestre, i.jornada,
                i.Materia1, i.Materia2, i.Materia3, i.Materia4, i.Materia5, i.Materia6, i.Materia7
         FROM Inscripciones i
         JOIN Usuarios u ON i.usuario_id = u.id
-        ORDER BY i.id DESC";
+        ORDER BY i.id DESC
+        LIMIT $offset, $registros_por_pagina";
 $result = $conn->query($sql); 
 ?>
 <!DOCTYPE html>
@@ -365,9 +375,14 @@ $result = $conn->query($sql);
     
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title mb-4">
-          <i class="bi bi-list-check me-2"></i> Lista de Inscripciones
-        </h5>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-list-check me-2"></i> Lista de Inscripciones
+          </h5>
+          <div class="text-muted">
+            Mostrando <?= ($offset + 1) ?>-<?= min($offset + $registros_por_pagina, $total_registros) ?> de <?= $total_registros ?> registros
+          </div>
+        </div>
         <div class="table-responsive">
           <table class="table table-hover">
             <thead>
@@ -415,6 +430,56 @@ $result = $conn->query($sql);
             </tbody>
           </table>
         </div>
+        
+        <!-- Paginación -->
+        <?php if ($total_paginas > 1): ?>
+        <nav aria-label="Navegación de páginas" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <!-- Botón Anterior -->
+            <li class="page-item <?= $pagina_actual <= 1 ? 'disabled' : '' ?>">
+              <a class="page-link" href="?pagina=<?= $pagina_actual - 1 ?>" aria-label="Anterior">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            
+            <!-- Números de página -->
+            <?php
+            $pagina_inicio = max(1, $pagina_actual - 2);
+            $pagina_fin = min($total_paginas, $pagina_actual + 2);
+            
+            // Mostrar primera página si no está en el rango
+            if ($pagina_inicio > 1) {
+                echo '<li class="page-item"><a class="page-link" href="?pagina=1">1</a></li>';
+                if ($pagina_inicio > 2) {
+                    echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+            }
+            
+            // Mostrar páginas en el rango actual
+            for ($i = $pagina_inicio; $i <= $pagina_fin; $i++):
+            ?>
+                <li class="page-item <?= $i == $pagina_actual ? 'active' : '' ?>">
+                    <a class="page-link" href="?pagina=<?= $i ?>"><?= $i ?></a>
+                </li>
+            <?php endfor; ?>
+            
+            <!-- Mostrar última página si no está en el rango -->
+            <?php if ($pagina_fin < $total_paginas): ?>
+                <?php if ($pagina_fin < $total_paginas - 1): ?>
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                <?php endif; ?>
+                <li class="page-item"><a class="page-link" href="?pagina=<?= $total_paginas ?>"><?= $total_paginas ?></a></li>
+            <?php endif; ?>
+            
+            <!-- Botón Siguiente -->
+            <li class="page-item <?= $pagina_actual >= $total_paginas ? 'disabled' : '' ?>">
+              <a class="page-link" href="?pagina=<?= $pagina_actual + 1 ?>" aria-label="Siguiente">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <?php endif; ?>
       </div>
     </div>
   </div>
