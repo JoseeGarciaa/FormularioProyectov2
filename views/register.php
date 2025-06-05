@@ -214,28 +214,23 @@
   </style>
 </head>
 <body>
-  <?php if (isset($_GET['status'])): ?>
-  <div class="toast <?= htmlspecialchars($_GET['status']) ?>">
-    <?php
-      $icon = '';
-      $message = '';
-      
-      switch ($_GET['status']) {
-        case 'ok':
-          $icon = 'check-circle';
-          $message = 'Registro exitoso. Ya puedes iniciar sesión.';
-          break;
-        case 'exists':
-          $icon = 'exclamation-triangle';
-          $message = 'El correo ya está registrado.';
-          break;
-        case 'error':
-          $icon = 'x-circle';
-          $message = 'Error al registrar. Intenta de nuevo.';
-          break;
-      }
-      echo '<i class="bi bi-' . $icon . '"></i><span>' . $message . '</span>';
-    ?>
+  <?php 
+  // Mostrar mensaje de error si existe
+  if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
+  <div class="toast error">
+    ❌ Error al registrar. Intenta de nuevo.
+  </div>
+  <?php endif; ?>
+  
+  <?php if (isset($_GET['status']) && $_GET['status'] === 'exists'): ?>
+  <div class="toast error">
+    ⚠️ El correo ya está registrado.
+  </div>
+  <?php endif; ?>
+  
+  <?php if (isset($_GET['registro']) && $_GET['registro'] === 'exitoso'): ?>
+  <div class="toast success">
+    ✅ Registro exitoso. Ya puedes iniciar sesión.
   </div>
   <?php endif; ?>
 
