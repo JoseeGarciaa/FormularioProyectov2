@@ -372,8 +372,8 @@ if (isset($_GET['eliminar'])) {
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="card-title mb-0">Listado de Programas Académicos</h5>
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#programaModal" id="btnNuevoPrograma">
-            <i class="bi bi-plus-lg"></i> <?= $programa_editar ? 'Editar' : 'Nuevo' ?> Programa
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#programaModal">
+            <i class="bi bi-plus-lg"></i> Nuevo Programa
           </button>
         </div>
         
