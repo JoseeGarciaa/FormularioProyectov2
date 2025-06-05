@@ -1,4 +1,4 @@
-<?php 
+<?php /*
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
   header("Location: ../views/login.php");
@@ -28,7 +28,7 @@ $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semes
         JOIN Usuarios u ON i.usuario_id = u.id
         ORDER BY i.id DESC
         LIMIT $offset, $registros_por_pagina";
-$result = $conn->query($sql); 
+$result = $conn->query($sql); */
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -373,6 +373,25 @@ $result = $conn->query($sql);
       </div>
     </div>
     
+    <!-- Sección de Estadísticas de Materias -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="bi bi-bar-chart-line me-2"></i> Estadísticas de Materias
+          <button class="btn btn-sm btn-outline-primary float-end" onclick="actualizarGrafica()">
+            <i class="bi bi-arrow-clockwise"></i> Actualizar
+          </button>
+        </h5>
+        <div class="text-center py-4">
+          <img src="grafica_materias.png?t=<?= time() ?>" alt="Gráfica de materias" class="img-fluid" id="grafica-materias">
+          <div class="mt-3">
+            <small class="text-muted">Última actualización: <?= date('d/m/Y H:i:s') ?></small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Inscripciones -->
     <div class="card">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -486,6 +505,30 @@ $result = $conn->query($sql);
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Función para actualizar la gráfica
+    function actualizarGrafica() {
+      // Mostrar indicador de carga
+      const grafica = document.getElementById('grafica-materias');
+      grafica.src = 'loading.gif'; // Asegúrate de tener una imagen de carga
+      
+      // Hacer una petición para actualizar la gráfica
+      fetch('actualizar_grafica.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Actualizar la imagen con un timestamp para evitar caché
+            grafica.src = 'grafica_materias.png?t=' + new Date().getTime();
+            // Mostrar mensaje de éxito
+            alert('Gráfica actualizada correctamente');
+          } else {
+            throw new Error(data.message || 'Error al actualizar la gráfica');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error al actualizar la gráfica: ' + error.message);
+        });
+    }
     // Agregar tooltips de Bootstrap
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
