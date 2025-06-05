@@ -287,10 +287,10 @@
         
         <div class="form-floating mb-2">
           <input type="password" class="form-control" id="contrasena" name="contrasena" placeholder="Contraseña" required 
-                 pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$">
+                 pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$">
           <label for="contrasena">Contraseña</label>
           <div class="invalid-feedback">
-            La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
+            La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.
           </div>
         </div>
         
@@ -311,10 +311,6 @@
           <div class="requirement" id="number">
             <i class="bi" id="number-icon"></i>
             <span>Al menos un número</span>
-          </div>
-          <div class="requirement" id="special">
-            <i class="bi" id="special-icon"></i>
-            <span>Al menos un carácter especial</span>
           </div>
         </div>
         
@@ -355,8 +351,7 @@
         length: { element: document.getElementById('length'), icon: document.getElementById('length-icon') },
         uppercase: { element: document.getElementById('uppercase'), icon: document.getElementById('uppercase-icon') },
         lowercase: { element: document.getElementById('lowercase'), icon: document.getElementById('lowercase-icon') },
-        number: { element: document.getElementById('number'), icon: document.getElementById('number-icon') },
-        special: { element: document.getElementById('special'), icon: document.getElementById('special-icon') }
+        number: { element: document.getElementById('number'), icon: document.getElementById('number-icon') }
       };
 
       // Función para validar la contraseña
@@ -398,15 +393,6 @@
           isValid = false;
         }
 
-
-        // Validar caracteres especiales
-        if (/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
-          setValid('special');
-        } else {
-          setInvalid('special');
-          isValid = false;
-        }
-
         return isValid;
       }
 
@@ -443,6 +429,17 @@
           if (!form.checkValidity() || !validatePassword() || !validateConfirmPassword()) {
             event.preventDefault();
             event.stopPropagation();
+          } else {
+            // Mostrar mensaje de éxito antes de enviar el formulario
+            const successToast = document.createElement('div');
+            successToast.className = 'toast ok';
+            successToast.innerHTML = '<i class="bi bi-check-circle"></i> Registro exitoso. Redirigiendo...';
+            document.body.appendChild(successToast);
+            
+            // Ocultar el mensaje después de 3 segundos
+            setTimeout(() => {
+              successToast.style.display = 'none';
+            }, 3000);
           }
           
           form.classList.add('was-validated');
