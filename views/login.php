@@ -128,68 +128,29 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      padding: 1rem 1.5rem;
+      padding: 15px 25px;
       border-radius: 8px;
-      font-weight: 500;
+      font-size: 16px;
+      font-weight: bold;
       color: white;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
       z-index: 1000;
-      opacity: 0;
-      animation: fadeIn 0.3s forwards;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      max-width: 400px;
-      transition: all 0.3s ease;
-      border-left: 4px solid transparent;
-    }
-    
-    .toast.show {
       opacity: 0.95;
-      animation: fadeIn 0.3s forwards;
+      animation: fadeOut 4s forwards;
     }
-
-    .toast.ok { 
+    
+    .toast.error { 
+      background-color: #dc3545;
+    }
+    
+    .toast.success {
       background-color: #28a745;
-      border-left: 4px solid #1e7e34;
-    }
-    
-    .toast.warning {
-      background-color: #ffc107;
-      border-left: 4px solid #d39e00;
-      color: #000;
-    }
-    
-    .toast.info {
-      background-color: #17a2b8;
-      border-left: 4px solid #117a8b;
-    }
-
-    @keyframes fadeIn {
-      from { 
-        opacity: 0; 
-        transform: translateY(-20px); 
-      }
-      to { 
-        opacity: 0.95; 
-        transform: translateY(0); 
-      }
-    }
-    
-    .toast.hide {
-      animation: fadeOut 0.3s forwards;
     }
     
     @keyframes fadeOut {
-      from { 
-        opacity: 0.95; 
-        transform: translateY(0); 
-      }
-      to { 
-        opacity: 0; 
-        transform: translateY(-20px); 
-        visibility: hidden;
-      }
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; display: none; }
     }
 
     @media (max-width: 576px) {
@@ -208,56 +169,17 @@
   </style>
 </head>
 <body>
-  <?php 
-if (isset($_GET['error'])): 
-  $errorMessage = 'Error en el correo o la contraseña.';
-  $errorClass = 'error';
+  <?php if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
+  <div class="toast error">
+    ❌ Correo o contraseña incorrectos.
+  </div>
+  <?php endif; ?>
   
-  if ($_GET['error'] == 'credenciales') {
-    $errorMessage = 'Correo o contraseña incorrectos. Por favor, intente de nuevo.';
-  } elseif ($_GET['error'] == 'inactivo') {
-    $errorMessage = 'Su cuenta está inactiva. Por favor, contacte al administrador.';
-    $errorClass = 'warning';
-  } elseif ($_GET['error'] == 'no_autorizado') {
-    $errorMessage = 'No tiene permisos para acceder a esta área.';
-    $errorClass = 'error';
-  } elseif ($_GET['error'] == 'sesion_expirada') {
-    $errorMessage = 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.';
-    $errorClass = 'info';
-  }
-?>
-  <div class="toast <?php echo $errorClass; ?> show">
-    <i class="bi bi-<?php echo $errorClass === 'warning' ? 'exclamation-triangle' : ($errorClass === 'info' ? 'info-circle' : 'x-circle'); ?>"></i>
-    <span><?php echo $errorMessage; ?></span>
+  <?php if (isset($_GET['registro']) && $_GET['registro'] === 'exitoso'): ?>
+  <div class="toast success">
+    ✅ Registro exitoso. Ya puedes iniciar sesión.
   </div>
-  <script>
-    // Ocultar el mensaje después de 5 segundos
-    setTimeout(() => {
-      const toast = document.querySelector('.toast');
-      if (toast) {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-      }
-    }, 5000);
-  </script>
-<?php endif; ?>
-
-<?php if (isset($_GET['registro']) && $_GET['registro'] === 'exitoso'): ?>
-  <div class="toast ok show">
-    <i class="bi bi-check-circle"></i>
-    <span>¡Registro exitoso! Por favor, inicie sesión con sus credenciales.</span>
-  </div>
-  <script>
-    // Ocultar el mensaje después de 5 segundos
-    setTimeout(() => {
-      const toast = document.querySelector('.toast');
-      if (toast) {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-      }
-    }, 5000);
-  </script>
-<?php endif; ?>
+  <?php endif; ?>
 
   <div class="login-container">
     <div class="login-card">
