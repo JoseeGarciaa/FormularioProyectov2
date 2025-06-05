@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $verificar->store_result();
 
     if ($verificar->num_rows > 0) {
-        header("Location: ../views/register.html?status=exists");
+        header("Location: ../views/register.php?status=exists");
         exit();
     }
 
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: ../views/register.php?status=ok");
         exit();
     } else {
-        header("Location: ../views/register.html?status=error");
+        header("Location: ../views/register.php?status=error");
         exit();
     }
 }
