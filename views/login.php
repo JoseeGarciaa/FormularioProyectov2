@@ -3,14 +3,54 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iniciar Sesión - USC</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
+    :root {
+      --primary-color: #001f87;
+      --secondary-color: #630000;
+      --accent-color: #ffc107;
+    }
+    
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(90deg, #001f87, #630000);
       color: #001f87;
       margin: 0;
       padding: 0;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .banner-container {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 5px solid var(--accent-color);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .banner-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .banner-img:hover {
+      transform: scale(1.02);
+    }
+
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2rem 0;
     }
     .container {
     max-width: 400px;
@@ -86,25 +126,30 @@
   </style>
 </head>
 <body>
-
-  <?php if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
-  <div class="toast error">
-    ❌ Correo o contraseña incorrectos.
-  </div>
-<?php endif; ?>
-
-  <div class="container">
-    <h2>Iniciar Sesión</h2>
-    <form action="../auth/login.php" method="POST">
-      <label>Correo:</label>
-      <input type="email" name="correo" required>
-      <label>Contraseña:</label>
-      <input type="password" name="contrasena" required>
-      <input type="submit" value="Iniciar Sesión">
-    </form>
-    <div class="link">
-      ¿No tienes cuenta? <a href="register.php">Regístrate</a>
+  <div class="wrapper">
+    <div class="banner-container">
+      <img src="../assets/images/Banner-Universidad-Santiago-de-Cali-USC-1.png" alt="Banner USC" class="banner-img">
     </div>
+    <div class="content-wrapper">
+      <?php if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
+      <div class="toast error">
+        ❌ Correo o contraseña incorrectos.
+      </div>
+      <?php endif; ?>
+
+      <div class="container">
+        <h2>Iniciar Sesión</h2>
+        <form action="../auth/login.php" method="POST">
+          <label>Correo:</label>
+          <input type="email" name="correo" required>
+          <label>Contraseña:</label>
+          <input type="password" name="contrasena" required>
+          <input type="submit" value="Iniciar Sesión">
+        </form>
+        <div class="link">
+          ¿No tienes cuenta? <a href="register.php">Regístrate</a>
+        </div>
+      </div>
   </div>
 </body>
 </html>
