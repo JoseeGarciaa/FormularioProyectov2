@@ -292,7 +292,7 @@ if (isset($_GET['eliminar'])) {
               </ul>
             </div>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#materiaModal" id="btnNuevaMateria">
-              <i class="bi bi-plus-lg"></i> Nueva Materia
+              <i class="bi bi-<?= $materia_editar ? 'pencil' : 'plus-lg' ?>"></i> <?= $materia_editar ? 'Editar' : 'Nueva' ?> Materia
             </button>
           </div>
         </div>
@@ -426,49 +426,18 @@ if (isset($_GET['eliminar'])) {
 document.addEventListener('DOMContentLoaded', function() {
     var myModal = new bootstrap.Modal(document.getElementById('materiaModal'));
     myModal.show();
-    
-    // Cambiar el título del modal a "Editar Materia"
-    document.getElementById('materiaModalLabel').textContent = 'Editar Materia';
-    
-    // Cambiar el texto del botón de guardar a "Actualizar"
-    var submitBtn = document.querySelector('#materiaModal button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.textContent = 'Actualizar';
-    }
 });
 <?php endif; ?>
 
-// Manejar el clic en el botón "Nueva Materia"
-document.getElementById('btnNuevaMateria').addEventListener('click', function(e) {
-    // Si estamos en modo edición, redirigir a la página sin parámetros de edición
-    if (window.location.search.includes('editar=')) {
-        e.preventDefault();
-        // Mantener el filtro de programa si existe
-        const urlParams = new URLSearchParams(window.location.search);
-        const programaId = urlParams.get('programa_id');
-        window.location.href = 'materias.php' + (programaId ? '?programa_id=' + programaId : '');
-    } else {
-        // Limpiar el formulario
-        var form = document.querySelector('#materiaModal form');
-        if (form) form.reset();
-        // Asegurarse de que el título sea "Nueva Materia"
-        var modalTitle = document.getElementById('materiaModalLabel');
-        if (modalTitle) modalTitle.textContent = 'Nueva Materia';
-        // Asegurarse de que el botón diga "Guardar"
-        var submitBtn = document.querySelector('#materiaModal button[type="submit"]');
-        if (submitBtn) submitBtn.textContent = 'Guardar';
-    }
-});
-
-// Limpiar la URL al cerrar el modal si estábamos editando
+// Limpiar el formulario al cerrar el modal si no estamos editando
 document.getElementById('materiaModal').addEventListener('hidden.bs.modal', function () {
-    if (window.location.search.includes('editar=')) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const programaId = urlParams.get('programa_id');
-        window.history.replaceState({}, document.title, 
-            window.location.pathname + 
-            (programaId ? '?programa_id=' + programaId : '')
-        );
+    if (!<?= $materia_editar ? 'true' : 'false' ?>) {
+        this.querySelector('form').reset();
+    } else {
+        // Si estábamos editando, redirigir para limpiar la URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('editar');
+        window.history.replaceState({}, document.title, url.toString());
     }
 });
 </script>
