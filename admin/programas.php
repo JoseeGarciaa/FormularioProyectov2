@@ -14,16 +14,44 @@ while ($row = $programas_query->fetch_assoc()) {
     $programas[] = $row;
 }
 
-// Procesar formulario de agregar programa
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_programa'])) {
-    $nombre = $conn->real_escape_string($_POST['nombre']);
+// Procesar formulario de agregar/editar programa
+if (isset($_POST['agregar_programa']) || isset($_POST['editar_programa'])) {
+    $nombre = trim($_POST['nombre']);
+    $es_edicion = isset($_POST['editar_programa']);
+    $programa_id = $es_edicion ? $_POST['programa_id'] : null;
     
-    $sql = "INSERT INTO Programas (nombre) VALUES ('$nombre')";
-    if ($conn->query($sql)) {
-        header("Location: programas.php?success=1");
-        exit();
+    if (empty($nombre)) {
+        $error = "El nombre del programa es obligatorio";
     } else {
-        $error = "Error al agregar el programa: " . $conn->error;
+        if ($es_edicion) {
+            $stmt = $conn->prepare("UPDATE Programas SET nombre = ? WHERE id = ?");
+            $stmt->bind_param("si", $nombre, $programa_id);
+            $mensaje_exito = "Programa actualizado exitosamente";
+        } else {
+            $stmt = $conn->prepare("INSERT INTO Programas (nombre) VALUES (?)");
+            $stmt->bind_param("s", $nombre);
+            $mensaje_exito = "Programa agregado exitosamente";
+        }
+        
+        if ($stmt->execute()) {
+            header("Location: programas.php?success=1&edit=" . ($es_edicion ? '1' : '0'));
+            exit();
+        } else {
+            $error = "Error al " . ($es_edicion ? 'actualizar' : 'agregar') . " el programa: " . $conn->error;
+        }
+    }
+}
+
+// Obtener datos del programa para editar
+$programa_editar = null;
+if (isset($_GET['editar'])) {
+    $id_editar = intval($_GET['editar']);
+    $result = $conn->query("SELECT * FROM Programas WHERE id = $id_editar");
+    if ($result->num_rows > 0) {
+        $programa_editar = $result->fetch_assoc();
+    } else {
+        header("Location: programas.php?error=Programa no encontrado");
+        exit();
     }
 }
 
@@ -344,14 +372,21 @@ if (isset($_GET['eliminar'])) {
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="card-title mb-0">Listado de Programas Académicos</h5>
-          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoProgramaModal">
-            <i class="bi bi-plus-lg"></i> Nuevo Programa
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#programaModal" id="btnNuevoPrograma">
+            <i class="bi bi-plus-lg"></i> <?= $programa_editar ? 'Editar' : 'Nuevo' ?> Programa
           </button>
         </div>
         
         <?php if (isset($_GET['success'])): ?>
           <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Programa agregado exitosamente.
+            Programa <?= isset($_GET['edit']) && $_GET['edit'] ? 'actualizado' : 'agregado' ?> exitosamente
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['error'])): ?>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars($_GET['error']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         <?php endif; ?>
@@ -390,7 +425,7 @@ if (isset($_GET['eliminar'])) {
                         <a href="materias.php?programa_id=<?= $programa['id'] ?>" class="btn btn-sm btn-primary" title="Ver materias">
                           <i class="bi bi-book"></i> Materias
                         </a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary" title="Editar">
+                        <a href="programas.php?editar=<?= $programa['id'] ?>" class="btn btn-sm btn-outline-primary" title="Editar">
                           <i class="bi bi-pencil"></i>
                         </a>
                         <a href="?eliminar=<?= $programa['id'] ?>" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="return confirm('¿Está seguro de eliminar este programa?')">
@@ -408,24 +443,30 @@ if (isset($_GET['eliminar'])) {
             </div>
           <?php endif; ?>
           
-          <!-- Modal Nuevo Programa -->
-          <div class="modal fade" id="nuevoProgramaModal" tabindex="-1" aria-labelledby="nuevoProgramaModalLabel" aria-hidden="true">
+          <!-- Modal Programa -->
+          <div class="modal fade" id="programaModal" tabindex="-1" aria-labelledby="programaModalLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="nuevoProgramaModalLabel">Nuevo Programa</h5>
+                  <h5 class="modal-title" id="programaModalLabel"><?= $programa_editar ? 'Editar' : 'Nuevo' ?> Programa</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST" action="">
+                  <?php if ($programa_editar): ?>
+                    <input type="hidden" name="programa_id" value="<?= $programa_editar['id'] ?>">
+                  <?php endif; ?>
                   <div class="modal-body">
                     <div class="mb-3">
                       <label for="nombre" class="form-label">Nombre del Programa</label>
-                      <input type="text" class="form-control" id="nombre" name="nombre" required>
+                      <input type="text" class="form-control" id="nombre" name="nombre" 
+                             value="<?= $programa_editar ? htmlspecialchars($programa_editar['nombre']) : '' ?>" required>
                     </div>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" name="agregar_programa" class="btn btn-primary">Guardar</button>
+                    <button type="submit" name="<?= $programa_editar ? 'editar_programa' : 'agregar_programa' ?>" class="btn btn-primary">
+                      <?= $programa_editar ? 'Actualizar' : 'Guardar' ?>
+                    </button>
                   </div>
                 </form>
               </div>
@@ -437,5 +478,24 @@ if (isset($_GET['eliminar'])) {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Mostrar automáticamente el modal si estamos en modo edición
+<?php if ($programa_editar): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    var myModal = new bootstrap.Modal(document.getElementById('programaModal'));
+    myModal.show();
+});
+<?php endif; ?>
+
+// Limpiar el formulario al cerrar el modal si no estamos editando
+document.getElementById('programaModal').addEventListener('hidden.bs.modal', function () {
+    if (!<?= $programa_editar ? 'true' : 'false' ?>) {
+        this.querySelector('form').reset();
+    } else {
+        // Si estábamos editando, redirigir para limpiar la URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+</script>
 </body>
 </html>
