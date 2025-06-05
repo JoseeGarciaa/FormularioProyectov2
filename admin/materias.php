@@ -26,17 +26,49 @@ $sql .= " ORDER BY p.nombre, m.nombre";
 
 $materias_query = $conn->query($sql);
 
-// Procesar formulario de agregar materia
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_materia'])) {
-    $nombre = $conn->real_escape_string($_POST['nombre']);
+// Procesar formulario de agregar/editar materia
+if (isset($_POST['agregar_materia']) || isset($_POST['editar_materia'])) {
+    $nombre = trim($_POST['nombre']);
     $programa_id = intval($_POST['programa_id']);
+    $es_edicion = isset($_POST['editar_materia']);
+    $materia_id = $es_edicion ? $_POST['materia_id'] : null;
     
-    $sql = "INSERT INTO Materias (nombre, programa_id) VALUES ('$nombre', $programa_id)";
-    if ($conn->query($sql)) {
-        header("Location: materias.php?success=1&programa_id=$programa_id");
-        exit();
+    if (empty($nombre) || $programa_id <= 0) {
+        $error = "Todos los campos son obligatorios";
     } else {
-        $error = "Error al agregar la materia: " . $conn->error;
+        if ($es_edicion) {
+            $stmt = $conn->prepare("UPDATE Materias SET nombre = ?, programa_id = ? WHERE id = ?");
+            $stmt->bind_param("sii", $nombre, $programa_id, $materia_id);
+            $mensaje_exito = "Materia actualizada exitosamente";
+        } else {
+            $stmt = $conn->prepare("INSERT INTO Materias (nombre, programa_id) VALUES (?, ?)");
+            $stmt->bind_param("si", $nombre, $programa_id);
+            $mensaje_exito = "Materia agregada exitosamente";
+        }
+        
+        if ($stmt->execute()) {
+            header("Location: materias.php?programa_id=$programa_id&success=1&edit=" . ($es_edicion ? '1' : '0'));
+            exit();
+        } else {
+            $error = "Error al " . ($es_edicion ? 'actualizar' : 'agregar') . " la materia: " . $conn->error;
+        }
+    }
+}
+
+// Obtener datos de la materia para editar
+$materia_editar = null;
+if (isset($_GET['editar'])) {
+    $id_editar = intval($_GET['editar']);
+    $result = $conn->query("SELECT * FROM Materias WHERE id = $id_editar");
+    if ($result->num_rows > 0) {
+        $materia_editar = $result->fetch_assoc();
+        // Si estamos editando, forzamos el programa_id al de la materia
+        if (!isset($_GET['programa_id'])) {
+            $programa_id = $materia_editar['programa_id'];
+        }
+    } else {
+        header("Location: materias.php" . ($programa_id ? "?programa_id=$programa_id" : "") . "&error=Materia no encontrada");
+        exit();
     }
 }
 
@@ -259,15 +291,22 @@ if (isset($_GET['eliminar'])) {
                 <?php endwhile; ?>
               </ul>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevaMateriaModal">
-              <i class="bi bi-plus-lg"></i> Nueva Materia
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#materiaModal" id="btnNuevaMateria">
+              <i class="bi bi-<?= $materia_editar ? 'pencil' : 'plus-lg' ?>"></i> <?= $materia_editar ? 'Editar' : 'Nueva' ?> Materia
             </button>
           </div>
         </div>
         
         <?php if (isset($_GET['success'])): ?>
           <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Materia <?= isset($_GET['edit']) ? 'actualizada' : 'agregada' ?> exitosamente.
+            Materia <?= isset($_GET['edit']) && $_GET['edit'] ? 'actualizada' : 'agregada' ?> exitosamente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_GET['error'])): ?>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars(urldecode($_GET['error'])) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         <?php endif; ?>
@@ -304,7 +343,7 @@ if (isset($_GET['eliminar'])) {
                     <td><?= htmlspecialchars($materia['nombre']) ?></td>
                     <td><?= htmlspecialchars($materia['programa_nombre']) ?></td>
                     <td class="d-flex gap-1">
-                      <a href="#" class="btn btn-sm btn-outline-secondary" title="Editar">
+                      <a href="materias.php?programa_id=<?= $programa_id ?>&editar=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-primary" title="Editar">
                         <i class="bi bi-pencil"></i>
                       </a>
                       <a href="?eliminar=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-danger" 
@@ -332,19 +371,23 @@ if (isset($_GET['eliminar'])) {
           </div>
         <?php endif; ?>
 
-        <!-- Modal Nueva Materia -->
-        <div class="modal fade" id="nuevaMateriaModal" tabindex="-1" aria-labelledby="nuevaMateriaModalLabel" aria-hidden="true">
+        <!-- Modal Materia -->
+        <div class="modal fade" id="materiaModal" tabindex="-1" aria-labelledby="materiaModalLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="nuevaMateriaModalLabel">Nueva Materia</h5>
+                <h5 class="modal-title" id="materiaModalLabel"><?= $materia_editar ? 'Editar' : 'Nueva' ?> Materia</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <form method="POST" action="">
+                <?php if ($materia_editar): ?>
+                  <input type="hidden" name="materia_id" value="<?= $materia_editar['id'] ?>">
+                <?php endif; ?>
                 <div class="modal-body">
                   <div class="mb-3">
                     <label for="nombre" class="form-label">Nombre de la Materia</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    <input type="text" class="form-control" id="nombre" name="nombre" 
+                           value="<?= $materia_editar ? htmlspecialchars($materia_editar['nombre']) : '' ?>" required>
                   </div>
                   <div class="mb-3">
                     <label for="programa_id" class="form-label">Programa</label>
@@ -355,7 +398,7 @@ if (isset($_GET['eliminar'])) {
                       $programas->data_seek(0);
                       while ($prog = $programas->fetch_assoc()): 
                       ?>
-                        <option value="<?= $prog['id'] ?>" <?= $programa_id == $prog['id'] ? 'selected' : '' ?>>
+                        <option value="<?= $prog['id'] ?>" <?= (($materia_editar && $materia_editar['programa_id'] == $prog['id']) || (!$materia_editar && $programa_id == $prog['id'])) ? 'selected' : '' ?>>
                           <?= htmlspecialchars($prog['nombre']) ?>
                         </option>
                       <?php endwhile; ?>
@@ -364,7 +407,9 @@ if (isset($_GET['eliminar'])) {
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                  <button type="submit" name="agregar_materia" class="btn btn-primary">Guardar</button>
+                  <button type="submit" name="<?= $materia_editar ? 'editar_materia' : 'agregar_materia' ?>" class="btn btn-primary">
+                    <?= $materia_editar ? 'Actualizar' : 'Guardar' ?>
+                  </button>
                 </div>
               </form>
             </div>
@@ -375,5 +420,26 @@ if (isset($_GET['eliminar'])) {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Mostrar automáticamente el modal si estamos en modo edición
+<?php if ($materia_editar): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    var myModal = new bootstrap.Modal(document.getElementById('materiaModal'));
+    myModal.show();
+});
+<?php endif; ?>
+
+// Limpiar el formulario al cerrar el modal si no estamos editando
+document.getElementById('materiaModal').addEventListener('hidden.bs.modal', function () {
+    if (!<?= $materia_editar ? 'true' : 'false' ?>) {
+        this.querySelector('form').reset();
+    } else {
+        // Si estábamos editando, redirigir para limpiar la URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('editar');
+        window.history.replaceState({}, document.title, url.toString());
+    }
+});
+</script>
 </body>
 </html>
