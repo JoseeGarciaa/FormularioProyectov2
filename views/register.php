@@ -314,14 +314,7 @@
           </div>
         </div>
         
-        <div class="form-floating mb-3">
-          <input type="password" class="form-control" id="confirmar_contrasena" placeholder="Confirmar Contraseña" required>
-          <label for="confirmar_contrasena">Confirmar Contraseña</label>
-          <div class="invalid-feedback">
-            Las contraseñas no coinciden.
-          </div>
-        </div>
-        
+
         <div class="d-grid gap-2">
           <button type="submit" class="btn btn-warning btn-register">
             <i class="bi bi-person-plus me-2"></i> Crear Cuenta
@@ -346,7 +339,6 @@
       
       // Validación personalizada de contraseña
       const password = document.getElementById('contrasena');
-      const confirmPassword = document.getElementById('confirmar_contrasena');
       const requirements = {
         length: { element: document.getElementById('length'), icon: document.getElementById('length-icon') },
         uppercase: { element: document.getElementById('uppercase'), icon: document.getElementById('uppercase-icon') },
@@ -408,25 +400,12 @@
       }
 
 
-      // Validar confirmación de contraseña
-      function validateConfirmPassword() {
-        if (confirmPassword.value !== password.value) {
-          confirmPassword.setCustomValidity('Las contraseñas no coinciden');
-          return false;
-        } else {
-          confirmPassword.setCustomValidity('');
-          return true;
-        }
-      }
-
-
       // Event listeners
       password.addEventListener('input', validatePassword);
-      confirmPassword.addEventListener('input', validateConfirmPassword);
       
       Array.from(forms).forEach(form => {
         form.addEventListener('submit', event => {
-          if (!form.checkValidity() || !validatePassword() || !validateConfirmPassword()) {
+          if (!form.checkValidity() || !validatePassword()) {
             event.preventDefault();
             event.stopPropagation();
           } else {
