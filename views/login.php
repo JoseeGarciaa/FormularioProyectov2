@@ -103,7 +103,7 @@
       <input type="submit" value="Iniciar Sesión">
     </form>
     <div class="link">
-      ¿No tienes cuenta? <a href="register.html">Regístrate</a>
+      ¿No tienes cuenta? <a href="register.php">Regístrate</a>
     </div>
   </div>
 </body>
