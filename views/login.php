@@ -189,7 +189,7 @@
         
         <?php if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
         <div class="toast">
-          <i class="bi bi-x-circle-fill"></i>
+         
           <span>Correo o contraseña incorrectos.</span>
         </div>
         <?php endif; ?>
