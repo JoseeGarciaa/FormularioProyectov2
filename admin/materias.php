@@ -291,8 +291,8 @@ if (isset($_GET['eliminar'])) {
                 <?php endwhile; ?>
               </ul>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#materiaModal" id="btnNuevaMateria">
-              <i class="bi bi-<?= $materia_editar ? 'pencil' : 'plus-lg' ?>"></i> <?= $materia_editar ? 'Editar' : 'Nueva' ?> Materia
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#materiaModal">
+              <i class="bi bi-plus-lg"></i> Nueva Materia
             </button>
           </div>
         </div>
