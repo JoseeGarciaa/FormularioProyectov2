@@ -74,9 +74,16 @@ if (isset($_GET['eliminar'])) {
     }
     
     .dashboard-container {
-      max-width: 95%;
-      margin: 2rem auto;
-      padding: 1.5rem;
+      width: 100%;
+      max-width: 1400px;
+      margin: 1rem auto;
+      padding: 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .dashboard-container {
+        padding: 1.5rem;
+      }
     }
     
     .card {
@@ -89,11 +96,19 @@ if (isset($_GET['eliminar'])) {
     
     .header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
       gap: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
     }
     
     .header h1 {
@@ -106,14 +121,25 @@ if (isset($_GET['eliminar'])) {
       background-color: #6c757d;
       color: white;
       border: none;
-      padding: 0.5rem 1.5rem;
+      padding: 0.5rem 1rem;
       border-radius: 50px;
       font-weight: 500;
       transition: all 0.3s ease;
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       text-decoration: none;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .btn-back {
+        width: auto;
+        padding: 0.5rem 1.5rem;
+        margin-bottom: 0;
+      }
     }
     
     .btn-back:hover {
