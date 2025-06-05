@@ -131,13 +131,12 @@
       <img src="../assets/images/Banner-Universidad-Santiago-de-Cali-USC-1.png" alt="Banner USC" class="banner-img">
     </div>
     <div class="content-wrapper">
-      <?php if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
-      <div class="toast error">
-        ❌ Correo o contraseña incorrectos.
-      </div>
-      <?php endif; ?>
-
       <div class="container">
+        <?php if (isset($_GET['status']) && $_GET['status'] === 'error'): ?>
+          <div class="toast error" style="position: relative; top: auto; right: auto; margin: 0 auto 20px; width: 100%; max-width: 400px;">
+            ❌ Correo o contraseña incorrectos.
+          </div>
+        <?php endif; ?>
         <h2>Iniciar Sesión</h2>
         <form action="../auth/login.php" method="POST">
           <label>Correo:</label>
