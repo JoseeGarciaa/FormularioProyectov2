@@ -69,36 +69,38 @@ if (!isset($_SESSION['nombre'])) {
     }
     
     .banner-container {
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       position: relative;
       z-index: 2;
+      padding: 1rem 0;
     }
     
     .banner-img {
       width: 100%;
       height: auto;
-      max-height: 120px;
+      max-height: 180px;
       object-fit: contain;
       animation: slideDown 1s ease-out;
+      filter: brightness(1.1) contrast(1.05);
     }
     
     .main-container {
       position: relative;
       z-index: 2;
-      min-height: calc(100vh - 120px);
+      min-height: calc(100vh - 200px);
       display: flex;
       align-items: center;
       padding: 2rem 0;
     }
     
     .welcome-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 25px;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
       overflow: hidden;
       animation: scaleIn 0.8s ease-out;
       position: relative;
@@ -120,8 +122,8 @@ if (!isset($_SESSION['nombre'])) {
     
     .welcome-header {
       background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.2), 
-        rgba(255, 255, 255, 0.1));
+        rgba(255, 255, 255, 0.12), 
+        rgba(255, 255, 255, 0.06));
       padding: 3rem 2rem 2rem;
       text-align: center;
       position: relative;
@@ -165,8 +167,8 @@ if (!isset($_SESSION['nombre'])) {
     }
     
     .action-card {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 15px;
       padding: 1.5rem;
       text-align: center;
@@ -196,9 +198,9 @@ if (!isset($_SESSION['nombre'])) {
     
     .action-card:hover {
       transform: translateY(-5px);
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
     }
     
     .action-icon {
@@ -260,11 +262,12 @@ if (!isset($_SESSION['nombre'])) {
     }
     
     .stats-section {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.06);
       border-radius: 15px;
       padding: 1.5rem;
       margin-top: 1rem;
       animation: fadeInUp 1s ease-out 0.9s both;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .stats-title {
