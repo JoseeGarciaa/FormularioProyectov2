@@ -220,7 +220,7 @@ if (isset($_SESSION['nombre'])) {
     <div class="content-wrapper">
       <div class="container">
         <div class="welcome-card">
-          <h1>Bienvenido a la Plataforma USC</h1>
+          <h1>Matricula USC</h1>
           <p class="lead-text">
             Accede a nuestro sistema de gestión académica para realizar tus inscripciones anticipadas para el proximo semestre.
           </p>
