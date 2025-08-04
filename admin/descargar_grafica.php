@@ -19,7 +19,7 @@ if (!file_exists($archivo_grafica)) {
     // Verificar si se generó correctamente
     if ($return_var !== 0 || !file_exists($archivo_grafica)) {
         http_response_code(404);
-        echo "Error: No se pudo generar o encontrar la gráfica de materias.";
+        echo "Error: No se pudo generar la gráfica de materias.";
         exit();
     }
 }

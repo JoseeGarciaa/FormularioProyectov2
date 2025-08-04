@@ -1,16 +1,8 @@
 import pymysql
 import matplotlib.pyplot as plt
 import numpy as np
-from collections import Counter
 
-# Configurar matplotlib para mejor visualización
-plt.style.use('default')
-plt.rcParams['font.family'] = ['Arial', 'sans-serif']
-plt.rcParams['axes.unicode_minus'] = False
-plt.rcParams['figure.facecolor'] = '#f8f9fa'
-plt.rcParams['axes.facecolor'] = 'white'
-
-# Configuración de la conexión a la base de datos
+# Configuración de la base de datos (igual que en dashboard.php)
 db_config = {
     'host': 'roundhouse.proxy.rlwy.net',
     'user': 'root',
@@ -21,192 +13,118 @@ db_config = {
     'cursorclass': pymysql.cursors.DictCursor
 }
 
-def obtener_datos_materias():
+def obtener_materias_inscritas():
     """
-    Obtiene los datos reales de materias desde la base de datos
-    Cuenta cuántos estudiantes han inscrito cada materia
+    Obtiene las materias más inscritas consultando la misma tabla que dashboard.php
     """
     try:
-        print("Conectando a la base de datos...")
         connection = pymysql.connect(**db_config)
+        print("Conectado a la base de datos...")
         
         with connection.cursor() as cursor:
-            # Verificar total de inscripciones
-            cursor.execute("SELECT COUNT(*) as total FROM Inscripciones")
-            total_registros = cursor.fetchone()['total']
-            print(f"Total de inscripciones: {total_registros}")
+            # Consultar todas las inscripciones (igual que dashboard.php)
+            sql = """
+            SELECT Materia1, Materia2, Materia3, Materia4, Materia5, Materia6, Materia7
+            FROM Inscripciones
+            """
+            cursor.execute(sql)
+            inscripciones = cursor.fetchall()
             
-            if total_registros == 0:
-                print("No hay datos en la tabla Inscripciones")
-                return []
+            print(f"Total de inscripciones encontradas: {len(inscripciones)}")
             
-            # Consulta simplificada y más eficiente
-            materias_count = {}
+            # Contar cada materia
+            contador_materias = {}
             
-            # Contar cada materia en cada columna
-            for i in range(1, 8):
-                sql = f"""
-                SELECT Materia{i} as materia, COUNT(*) as cantidad
-                FROM Inscripciones 
-                WHERE Materia{i} IS NOT NULL 
-                  AND Materia{i} != '' 
-                  AND Materia{i} != 'NULL'
-                  AND TRIM(Materia{i}) != ''
-                GROUP BY Materia{i}
-                """
-                
-                cursor.execute(sql)
-                resultados = cursor.fetchall()
-                
-                for row in resultados:
-                    materia = row['materia'].strip()
-                    cantidad = row['cantidad']
-                    
-                    if materia in materias_count:
-                        materias_count[materia] += cantidad
-                    else:
-                        materias_count[materia] = cantidad
+            for inscripcion in inscripciones:
+                # Revisar cada columna de materia
+                for i in range(1, 8):
+                    materia = inscripcion[f'Materia{i}']
+                    if materia and materia.strip() and materia != 'NULL':
+                        materia = materia.strip()
+                        if materia in contador_materias:
+                            contador_materias[materia] += 1
+                        else:
+                            contador_materias[materia] = 1
             
-            # Ordenar por cantidad (descendente) y tomar top 10
-            materias_ordenadas = sorted(materias_count.items(), key=lambda x: x[1], reverse=True)[:10]
+            # Ordenar de mayor a menor
+            materias_ordenadas = sorted(contador_materias.items(), key=lambda x: x[1], reverse=True)
             
-            print("\nMaterias encontradas:")
-            for materia, cantidad in materias_ordenadas:
-                print(f"  {materia}: {cantidad} estudiantes")
+            print("\nMaterias más inscritas:")
+            for i, (materia, cantidad) in enumerate(materias_ordenadas, 1):
+                print(f"{i}. {materia}: {cantidad} estudiantes")
             
             return materias_ordenadas
             
     except Exception as e:
         print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
         return []
     finally:
-        if 'connection' in locals() and connection.open:
+        if 'connection' in locals():
             connection.close()
 
-def generar_grafica(materias):
+def crear_grafica(materias_data):
     """
-    Genera una gráfica moderna y atractiva de barras verticales
+    Crea una gráfica de barras simple y bonita
     """
-    if not materias:
-        print("No hay datos para mostrar.")
+    if not materias_data:
+        print("No hay datos para la gráfica")
         return
     
-    print(f"Generando gráfica con {len(materias)} materias...")
+    # Preparar datos
+    materias = [item[0] for item in materias_data]
+    cantidades = [item[1] for item in materias_data]
     
-    # Separar nombres y cantidades
-    nombres = [m[0] for m in materias]
-    cantidades = [m[1] for m in materias]
+    # Crear la gráfica
+    plt.figure(figsize=(12, 8))
     
-    # Crear figura con diseño moderno
-    fig, ax = plt.subplots(figsize=(14, 9))
-    fig.patch.set_facecolor('#f8f9fa')
+    # Colores atractivos
+    colores = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
+               '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9']
     
-    # Paleta de colores moderna y vibrante
-    colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', 
-              '#1abc9c', '#e67e22', '#34495e', '#f1c40f', '#95a5a6']
+    # Crear barras
+    barras = plt.bar(range(len(materias)), cantidades, 
+                     color=colores[:len(materias)], 
+                     alpha=0.8, 
+                     edgecolor='black', 
+                     linewidth=1)
     
-    # Crear barras con efectos modernos
-    x_pos = np.arange(len(nombres))
-    bars = ax.bar(x_pos, cantidades, 
-                  color=colors[:len(nombres)], 
-                  alpha=0.8,
-                  edgecolor='white',
-                  linewidth=3,
-                  width=0.7)
+    # Personalizar la gráfica
+    plt.title('Materias Más Inscritas por Estudiantes', fontsize=16, fontweight='bold', pad=20)
+    plt.xlabel('Materias', fontsize=12, fontweight='bold')
+    plt.ylabel('Número de Estudiantes', fontsize=12, fontweight='bold')
     
-    # Añadir efectos visuales simples
-    for i, bar in enumerate(bars):
-        # Mejorar el borde de cada barra
-        bar.set_edgecolor('#2c3e50')
-        bar.set_linewidth(2)
+    # Etiquetas del eje X
+    plt.xticks(range(len(materias)), materias, rotation=45, ha='right')
     
-    # Título principal elegante
-    ax.set_title('Materias Más Inscritas por Estudiantes', 
-                fontsize=22, fontweight='bold', pad=30, 
-                color='#2c3e50', family='serif')
+    # Agregar valores encima de las barras
+    for i, (barra, cantidad) in enumerate(zip(barras, cantidades)):
+        plt.text(barra.get_x() + barra.get_width()/2, barra.get_height() + 1,
+                str(cantidad), ha='center', va='bottom', fontweight='bold')
     
-    # Subtítulo informativo
-    total_inscripciones = sum(cantidades)
-    ax.text(0.5, 0.95, f'Total de Inscripciones: {total_inscripciones}',
-            transform=ax.transAxes, ha='center', fontsize=14,
-            style='italic', color='#7f8c8d')
-    
-    # Etiquetas de ejes con estilo
-    ax.set_xlabel('Materias Académicas', fontsize=16, fontweight='bold', 
-                  color='#34495e', labelpad=15)
-    ax.set_ylabel('Número de Estudiantes Inscritos', fontsize=16, fontweight='bold', 
-                  color='#34495e', labelpad=15)
-    
-    # Configurar etiquetas del eje X
-    ax.set_xticks(x_pos)
-    ax.set_xticklabels(nombres, rotation=45, ha='right', fontsize=12, 
-                       color='#2c3e50', fontweight='500')
-    
-    # Grid sutil y elegante
-    ax.grid(True, axis='y', alpha=0.3, linestyle='-', linewidth=0.5, color='#bdc3c7')
-    ax.set_axisbelow(True)
-    
-    # Valores en las barras con diseño mejorado
-    for i, (bar, cantidad) in enumerate(zip(bars, cantidades)):
-        height = bar.get_height()
-        
-        # Número de estudiantes arriba de la barra
-        ax.text(bar.get_x() + bar.get_width()/2., height + max(cantidades) * 0.02,
-                f'{int(cantidad)}',
-                ha='center', va='bottom', fontsize=13, fontweight='bold', 
-                color='#2c3e50',
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
-                         edgecolor=colors[i], linewidth=2, alpha=0.9))
-        
-        # Ranking dentro de la barra
-        ax.text(bar.get_x() + bar.get_width()/2., height * 0.1,
-                f'#{i+1}',
-                ha='center', va='center', fontsize=14, fontweight='bold',
-                color='white', 
-                bbox=dict(boxstyle='circle,pad=0.4', facecolor='#2c3e50', alpha=0.9))
-    
-    # Personalizar bordes
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    
-    # Configurar límites del eje Y para mejor visualización
-    ax.set_ylim(0, max(cantidades) * 1.15)
-    
-    # Añadir información estadística
-    promedio = np.mean(cantidades)
-    ax.axhline(y=promedio, color='#e74c3c', linestyle='--', alpha=0.7, linewidth=2)
-    ax.text(len(nombres) - 1, promedio + max(cantidades) * 0.03, 
-            f'Promedio: {promedio:.1f}',
-            ha='right', va='bottom', fontsize=11, 
-            bbox=dict(boxstyle='round,pad=0.3', facecolor='#e74c3c', 
-                     alpha=0.8, edgecolor='white'),
-            color='white', fontweight='bold')
+    # Grid para mejor lectura
+    plt.grid(axis='y', alpha=0.3)
     
     # Ajustar layout
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.2, top=0.85, left=0.1, right=0.95)
     
-    # Guardar con alta calidad
-    plt.savefig('grafica_materias.png', dpi=300, bbox_inches='tight', 
-                facecolor='#f8f9fa', edgecolor='none', pad_inches=0.2)
-    print("Gráfica generada correctamente: grafica_materias.png")
+    # Guardar la gráfica
+    plt.savefig('grafica_materias.png', dpi=300, bbox_inches='tight')
+    print("Gráfica guardada como 'grafica_materias.png'")
     
-    # Liberar memoria
+    # Mostrar la gráfica (opcional)
+    # plt.show()
+    
     plt.close()
 
 if __name__ == "__main__":
-    print("Obteniendo datos de materias...")
-    datos_materias = obtener_datos_materias()
+    print("=== GENERANDO GRÁFICA DE MATERIAS ===")
     
-    if datos_materias:
-        print(f"Se encontraron {len(datos_materias)} materias con inscripciones.")
-        print("\nTop 15 materias más populares:")
-        for i, (materia, cantidad) in enumerate(datos_materias, 1):
-            print(f"{i}. {materia}: {cantidad} inscripciones")
-        
-        print("\nGenerando gráfica...")
-        generar_grafica(datos_materias)
+    # Obtener datos
+    materias_data = obtener_materias_inscritas()
+    
+    if materias_data:
+        # Crear gráfica
+        crear_grafica(materias_data)
+        print("¡Gráfica generada exitosamente!")
     else:
-        print("No se encontraron datos de materias.")
+        print("No se pudieron obtener los datos")
