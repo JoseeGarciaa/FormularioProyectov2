@@ -1,6 +1,12 @@
 import pymysql
 import matplotlib.pyplot as plt
 import numpy as np
+from collections import Counter
+import matplotlib.patches as patches
+
+# Configurar matplotlib para usar una fuente que soporte caracteres especiales
+plt.rcParams['font.family'] = ['DejaVu Sans', 'Arial', 'sans-serif']
+plt.rcParams['axes.unicode_minus'] = False
 
 # Configuración de la conexión a la base de datos
 db_config = {
@@ -101,41 +107,88 @@ def generar_grafica(materias):
         print("No hay datos para mostrar.")
         return
     
-    # Separar nombres y cantidades
-    nombres = [m[0] for m in materias]
-    cantidades = [m[1] for m in materias]
+    # Limitar a las top 10 materias para mejor visualización
+    top_materias = materias[:10]
     
-    # Crear la figura
-    plt.figure(figsize=(12, 8))
+    # Separar nombres y cantidades
+    nombres = [m[0] for m in top_materias]
+    cantidades = [m[1] for m in top_materias]
+    
+    # Crear colores degradados
+    colors = plt.cm.viridis(np.linspace(0.2, 0.8, len(nombres)))
+    
+    # Crear la figura con fondo personalizado
+    fig, ax = plt.subplots(figsize=(14, 10))
+    fig.patch.set_facecolor('#f8f9fa')
+    ax.set_facecolor('#ffffff')
     
     # Crear la gráfica de barras horizontales
     y_pos = np.arange(len(nombres))
-    bars = plt.barh(y_pos, cantidades, color='#001f87', alpha=0.7)
+    bars = ax.barh(y_pos, cantidades, color=colors, alpha=0.8, height=0.6)
     
-    # Añadir etiquetas y título
-    plt.xlabel('Número de Inscripciones', fontsize=12)
-    plt.ylabel('Materias', fontsize=12)
-    plt.title('Materias más Populares - Próximo Semestre', fontsize=16, pad=20)
+    # Añadir gradiente a las barras
+    for i, bar in enumerate(bars):
+        # Crear gradiente
+        gradient = np.linspace(0, 1, 256).reshape(1, -1)
+        gradient = np.vstack((gradient, gradient))
+        
+        # Aplicar gradiente
+        bar_color = colors[i]
+        bar.set_color(bar_color)
+    
+    # Personalizar el título
+    ax.set_title('📊 Materias Más Inscritas por Estudiantes', 
+                fontsize=20, fontweight='bold', pad=30, color='#2c3e50')
+    
+    # Personalizar etiquetas de ejes
+    ax.set_xlabel('Número de Estudiantes Inscritos', fontsize=14, fontweight='bold', color='#34495e')
+    ax.set_ylabel('Materias', fontsize=14, fontweight='bold', color='#34495e')
     
     # Ajustar las etiquetas del eje Y
-    plt.yticks(y_pos, nombres, fontsize=10)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(nombres, fontsize=11, color='#2c3e50')
     
-    # Añadir los valores en las barras
-    for bar in bars:
+    # Personalizar grid
+    ax.grid(True, axis='x', alpha=0.3, linestyle='--', linewidth=0.8)
+    ax.set_axisbelow(True)
+    
+    # Añadir los valores en las barras con mejor formato
+    for i, (bar, cantidad) in enumerate(zip(bars, cantidades)):
         width = bar.get_width()
-        plt.text(width + 0.1, bar.get_y() + bar.get_height()/2., 
-                f'{int(width)}', 
-                ha='left', va='center', fontsize=10)
+        # Añadir número de estudiantes
+        ax.text(width + max(cantidades) * 0.01, bar.get_y() + bar.get_height()/2., 
+                f'{int(width)} estudiantes', 
+                ha='left', va='center', fontsize=11, fontweight='bold', color='#2c3e50')
+        
+        # Añadir ranking
+        ax.text(-max(cantidades) * 0.02, bar.get_y() + bar.get_height()/2., 
+                f'#{i+1}', 
+                ha='right', va='center', fontsize=10, fontweight='bold', 
+                color='white', bbox=dict(boxstyle='circle', facecolor=colors[i], alpha=0.8))
     
-    # Ajustar el diseño
-    plt.tight_layout()
+    # Personalizar bordes
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_color('#bdc3c7')
+    ax.spines['bottom'].set_color('#bdc3c7')
     
-    # Guardar la imagen
-    plt.savefig('grafica_materias.png', dpi=300, bbox_inches='tight')
+    # Añadir información adicional
+    total_inscripciones = sum(cantidades)
+    ax.text(0.02, 0.98, f'Total de inscripciones: {total_inscripciones}', 
+            transform=ax.transAxes, fontsize=12, fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.5', facecolor='#ecf0f1', alpha=0.8),
+            verticalalignment='top', color='#2c3e50')
+    
+    # Ajustar márgenes
+    plt.subplots_adjust(left=0.25, right=0.95, top=0.9, bottom=0.1)
+    
+    # Guardar la imagen con alta calidad
+    plt.savefig('grafica_materias.png', dpi=300, bbox_inches='tight', 
+                facecolor='#f8f9fa', edgecolor='none')
     print("Gráfica generada correctamente: grafica_materias.png")
     
-    # Mostrar la gráfica
-    plt.show()
+    # No mostrar la gráfica en modo servidor
+    # plt.show()
 
 if __name__ == "__main__":
     print("Obteniendo datos de materias...")

@@ -323,6 +323,44 @@ $result = $conn->query($sql);
         padding: 1.25rem;
       }
     }
+    
+    /* Estilos para la sección de gráfica */
+    #graficaContainer {
+      min-height: 200px;
+      position: relative;
+    }
+    
+    #graficaContainer img {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    #graficaContainer img:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    }
+    
+    .spinner-border {
+      width: 3rem;
+      height: 3rem;
+    }
+    
+    #loadingGrafica p {
+      color: #6c757d;
+      font-weight: 500;
+    }
+    
+    /* Responsive para la gráfica */
+    @media (max-width: 768px) {
+      #graficaContainer img {
+        border-radius: 4px !important;
+      }
+    }
+    
+    /* Animación para los botones */
+    .btn-success:hover, .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
   </style>
 </head>
 <body>
@@ -369,6 +407,50 @@ $result = $conn->query($sql);
           <i class="bi bi-people-fill"></i>
           <h3><?= $total_estudiantes - $total_masculino - $total_femenino ?></h3>
           <p>Otro</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sección de Gráfica de Materias -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-bar-chart me-2"></i> Gráfica de Materias Más Inscritas
+          </h5>
+          <div class="d-flex gap-2">
+            <a href="descargar_grafica.php" class="btn btn-success btn-sm" id="descargarGrafica">
+              <i class="bi bi-download me-1"></i> Descargar
+            </a>
+            <button id="actualizarGrafica" class="btn btn-primary btn-sm">
+              <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+            </button>
+          </div>
+        </div>
+        
+        <div id="graficaContainer" class="text-center">
+          <div id="loadingGrafica" class="d-none">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Generando gráfica...</span>
+            </div>
+            <p class="mt-2">Generando gráfica de materias...</p>
+          </div>
+          
+          <div id="graficaContent">
+            <?php if (file_exists(__DIR__ . '/grafica_materias.png')): ?>
+              <img src="grafica_materias.png?v=<?= time() ?>" alt="Gráfica de Materias" class="img-fluid" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <?php else: ?>
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Haz clic en "Actualizar Gráfica" para generar la visualización de materias más inscritas.
+              </div>
+            <?php endif; ?>
+          </div>
+          
+          <div id="errorGrafica" class="alert alert-danger d-none">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span id="errorMessage">Error al generar la gráfica</span>
+          </div>
         </div>
       </div>
     </div>
@@ -493,6 +575,119 @@ $result = $conn->query($sql);
         trigger: 'hover',
         placement: 'top'
       });
+    });
+    
+    // Verificar si existe la gráfica al cargar la página
+    function actualizarEstadoBotones() {
+      const descargarBtn = document.getElementById('descargarGrafica');
+      const graficaImg = document.querySelector('#graficaContent img');
+      
+      if (graficaImg) {
+        descargarBtn.style.display = 'inline-flex';
+        descargarBtn.classList.remove('disabled');
+      } else {
+        descargarBtn.style.display = 'none';
+      }
+    }
+    
+    // Ejecutar al cargar la página
+    actualizarEstadoBotones();
+    
+    // Manejar actualización de gráfica
+    document.getElementById('actualizarGrafica').addEventListener('click', function() {
+      const loadingDiv = document.getElementById('loadingGrafica');
+      const contentDiv = document.getElementById('graficaContent');
+      const errorDiv = document.getElementById('errorGrafica');
+      const button = this;
+      const descargarBtn = document.getElementById('descargarGrafica');
+      
+      // Mostrar loading y ocultar contenido
+      loadingDiv.classList.remove('d-none');
+      contentDiv.classList.add('d-none');
+      errorDiv.classList.add('d-none');
+      button.disabled = true;
+      descargarBtn.style.display = 'none';
+      
+      // Realizar petición AJAX
+      fetch('actualizar_grafica.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Actualizar imagen con timestamp para evitar cache
+            const timestamp = new Date().getTime();
+            contentDiv.innerHTML = `
+              <img src="grafica_materias.png?v=${timestamp}" 
+                   alt="Gráfica de Materias" 
+                   class="img-fluid" 
+                   style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            `;
+            
+            // Mostrar botón de descarga
+            descargarBtn.style.display = 'inline-flex';
+            descargarBtn.classList.remove('disabled');
+            
+            // Mostrar mensaje de éxito temporal
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success alert-dismissible fade show mt-3';
+            successAlert.innerHTML = `
+              <i class="bi bi-check-circle me-2"></i>
+              Gráfica actualizada correctamente. Ya puedes descargarla.
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            contentDiv.appendChild(successAlert);
+            
+            // Auto-ocultar el mensaje después de 4 segundos
+            setTimeout(() => {
+              if (successAlert.parentNode) {
+                successAlert.remove();
+              }
+            }, 4000);
+            
+          } else {
+            // Mostrar error
+            document.getElementById('errorMessage').textContent = data.message;
+            errorDiv.classList.remove('d-none');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('errorMessage').textContent = 'Error de conexión al actualizar la gráfica';
+          errorDiv.classList.remove('d-none');
+        })
+        .finally(() => {
+          // Ocultar loading y restaurar botón
+          loadingDiv.classList.add('d-none');
+          contentDiv.classList.remove('d-none');
+          button.disabled = false;
+        });
+    });
+    
+    // Manejar descarga de gráfica
+    document.getElementById('descargarGrafica').addEventListener('click', function(e) {
+      const graficaImg = document.querySelector('#graficaContent img');
+      
+      if (!graficaImg) {
+        e.preventDefault();
+        alert('Primero debes generar la gráfica haciendo clic en "Actualizar"');
+        return false;
+      }
+      
+      // Mostrar mensaje de descarga
+      const downloadAlert = document.createElement('div');
+      downloadAlert.className = 'alert alert-info alert-dismissible fade show mt-3';
+      downloadAlert.innerHTML = `
+        <i class="bi bi-download me-2"></i>
+        Descargando gráfica...
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      document.getElementById('graficaContent').appendChild(downloadAlert);
+      
+      // Auto-ocultar el mensaje después de 3 segundos
+      setTimeout(() => {
+        if (downloadAlert.parentNode) {
+          downloadAlert.remove();
+        }
+      }, 3000);
     });
   </script>
 </body>
