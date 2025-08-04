@@ -588,22 +588,6 @@ $result = $conn->query($sql);
       });
     });
     
-    // Verificar si existe la gráfica al cargar la página
-    function actualizarEstadoBotones() {
-      const descargarBtn = document.getElementById('descargarGrafica');
-      const graficaImg = document.querySelector('#graficaContent img');
-      
-      if (graficaImg) {
-        descargarBtn.style.display = 'inline-flex';
-        descargarBtn.classList.remove('disabled');
-      } else {
-        descargarBtn.style.display = 'none';
-      }
-    }
-    
-    // Ejecutar al cargar la página
-    actualizarEstadoBotones();
-    
     // Variables para la gráfica interactiva
     let graficaChart = null;
     
