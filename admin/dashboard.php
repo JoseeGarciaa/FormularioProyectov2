@@ -38,6 +38,7 @@ $result = $conn->query($sql);
   <title>Panel de Administrador - USC</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --primary-color: #001f87;
@@ -411,45 +412,55 @@ $result = $conn->query($sql);
       </div>
     </div>
     
-    <!-- Sección de Gráfica de Materias -->
+    <!-- Sección de Gráfica Interactiva de Materias -->
     <div class="card mb-4">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="card-title mb-0">
-            <i class="bi bi-bar-chart me-2"></i> Gráfica de Materias Más Inscritas
+            <i class="bi bi-bar-chart me-2"></i> Materias Más Inscritas por Estudiantes
           </h5>
-          <div class="d-flex gap-2">
-            <a href="descargar_grafica.php" class="btn btn-success btn-sm" id="descargarGrafica">
-              <i class="bi bi-download me-1"></i> Descargar
-            </a>
-            <button id="actualizarGrafica" class="btn btn-primary btn-sm">
-              <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
-            </button>
+          <button id="actualizarGraficaInteractiva" class="btn btn-primary btn-sm">
+            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+          </button>
+        </div>
+        
+        <!-- Estadísticas -->
+        <div class="row mb-4" id="estadisticasGrafica">
+          <div class="col-md-4">
+            <div class="text-center p-3 bg-light rounded">
+              <h6 class="text-muted mb-1">Total Estudiantes</h6>
+              <h4 class="mb-0 text-primary" id="totalEstudiantes">-</h4>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center p-3 bg-light rounded">
+              <h6 class="text-muted mb-1">Materias Únicas</h6>
+              <h4 class="mb-0 text-success" id="totalMaterias">-</h4>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center p-3 bg-light rounded">
+              <h6 class="text-muted mb-1">Promedio por Materia</h6>
+              <h4 class="mb-0 text-info" id="promedioMaterias">-</h4>
+            </div>
           </div>
         </div>
         
-        <div id="graficaContainer" class="text-center">
-          <div id="loadingGrafica" class="d-none">
+        <div id="graficaInteractivaContainer">
+          <div id="loadingGraficaInteractiva" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Generando gráfica...</span>
+              <span class="visually-hidden">Cargando gráfica...</span>
             </div>
-            <p class="mt-2">Generando gráfica de materias...</p>
+            <p class="mt-2">Cargando datos de materias...</p>
           </div>
           
-          <div id="graficaContent">
-            <?php if (file_exists(__DIR__ . '/grafica_materias.png')): ?>
-              <img src="grafica_materias.png?v=<?= time() ?>" alt="Gráfica de Materias" class="img-fluid" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            <?php else: ?>
-              <div class="alert alert-info">
-                <i class="bi bi-info-circle me-2"></i>
-                Haz clic en "Actualizar Gráfica" para generar la visualización de materias más inscritas.
-              </div>
-            <?php endif; ?>
+          <div id="graficaInteractivaContent" class="d-none" style="height: 400px;">
+            <canvas id="graficaMaterias"></canvas>
           </div>
           
-          <div id="errorGrafica" class="alert alert-danger d-none">
+          <div id="errorGraficaInteractiva" class="alert alert-danger d-none">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            <span id="errorMessage">Error al generar la gráfica</span>
+            <span id="errorMessageInteractiva">Error al cargar la gráfica</span>
           </div>
         </div>
       </div>
@@ -593,101 +604,121 @@ $result = $conn->query($sql);
     // Ejecutar al cargar la página
     actualizarEstadoBotones();
     
-    // Manejar actualización de gráfica
-    document.getElementById('actualizarGrafica').addEventListener('click', function() {
-      const loadingDiv = document.getElementById('loadingGrafica');
-      const contentDiv = document.getElementById('graficaContent');
-      const errorDiv = document.getElementById('errorGrafica');
-      const button = this;
-      const descargarBtn = document.getElementById('descargarGrafica');
+    // Variables para la gráfica interactiva
+    let graficaChart = null;
+    
+    // Función para cargar datos de la gráfica
+    function cargarGraficaInteractiva() {
+      const loadingDiv = document.getElementById('loadingGraficaInteractiva');
+      const contentDiv = document.getElementById('graficaInteractivaContent');
+      const errorDiv = document.getElementById('errorGraficaInteractiva');
+      const button = document.getElementById('actualizarGraficaInteractiva');
       
-      // Mostrar loading y ocultar contenido
+      // Mostrar loading
       loadingDiv.classList.remove('d-none');
       contentDiv.classList.add('d-none');
       errorDiv.classList.add('d-none');
       button.disabled = true;
-      descargarBtn.style.display = 'none';
       
       // Realizar petición AJAX
-      fetch('actualizar_grafica.php')
+      fetch('obtener_datos_grafica.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            // Actualizar imagen con timestamp para evitar cache
-            const timestamp = new Date().getTime();
-            contentDiv.innerHTML = `
-              <img src="grafica_materias.png?v=${timestamp}" 
-                   alt="Gráfica de Materias" 
-                   class="img-fluid" 
-                   style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            `;
+            // Actualizar estadísticas
+            document.getElementById('totalEstudiantes').textContent = data.stats.total_estudiantes;
+            document.getElementById('totalMaterias').textContent = data.stats.total_materias;
+            document.getElementById('promedioMaterias').textContent = data.stats.promedio;
             
-            // Mostrar botón de descarga
-            descargarBtn.style.display = 'inline-flex';
-            descargarBtn.classList.remove('disabled');
+            // Destruir gráfica anterior si existe
+            if (graficaChart) {
+              graficaChart.destroy();
+            }
             
-            // Mostrar mensaje de éxito temporal
-            const successAlert = document.createElement('div');
-            successAlert.className = 'alert alert-success alert-dismissible fade show mt-3';
-            successAlert.innerHTML = `
-              <i class="bi bi-check-circle me-2"></i>
-              Gráfica actualizada correctamente. Ya puedes descargarla.
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            contentDiv.appendChild(successAlert);
-            
-            // Auto-ocultar el mensaje después de 4 segundos
-            setTimeout(() => {
-              if (successAlert.parentNode) {
-                successAlert.remove();
+            // Crear nueva gráfica
+            const ctx = document.getElementById('graficaMaterias').getContext('2d');
+            graficaChart = new Chart(ctx, {
+              type: 'bar',
+              data: data.data,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: 'Top 10 Materias Más Inscritas por Estudiantes',
+                    font: {
+                      size: 16,
+                      weight: 'bold'
+                    }
+                  },
+                  legend: {
+                    display: false
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return context.parsed.y + ' estudiantes';
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    title: {
+                      display: true,
+                      text: 'Número de Estudiantes'
+                    },
+                    ticks: {
+                      stepSize: 1
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Materias'
+                    },
+                    ticks: {
+                      maxRotation: 45,
+                      minRotation: 45
+                    }
+                  }
+                },
+                animation: {
+                  duration: 1000,
+                  easing: 'easeInOutQuart'
+                }
               }
-            }, 4000);
+            });
+            
+            // Mostrar contenido
+            contentDiv.classList.remove('d-none');
             
           } else {
             // Mostrar error
-            document.getElementById('errorMessage').textContent = data.message;
+            document.getElementById('errorMessageInteractiva').textContent = data.message;
             errorDiv.classList.remove('d-none');
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          document.getElementById('errorMessage').textContent = 'Error de conexión al actualizar la gráfica';
+          document.getElementById('errorMessageInteractiva').textContent = 'Error de conexión al cargar los datos';
           errorDiv.classList.remove('d-none');
         })
         .finally(() => {
           // Ocultar loading y restaurar botón
           loadingDiv.classList.add('d-none');
-          contentDiv.classList.remove('d-none');
           button.disabled = false;
         });
-    });
+    }
     
-    // Manejar descarga de gráfica
-    document.getElementById('descargarGrafica').addEventListener('click', function(e) {
-      const graficaImg = document.querySelector('#graficaContent img');
-      
-      if (!graficaImg) {
-        e.preventDefault();
-        alert('Primero debes generar la gráfica haciendo clic en "Actualizar"');
-        return false;
-      }
-      
-      // Mostrar mensaje de descarga
-      const downloadAlert = document.createElement('div');
-      downloadAlert.className = 'alert alert-info alert-dismissible fade show mt-3';
-      downloadAlert.innerHTML = `
-        <i class="bi bi-download me-2"></i>
-        Descargando gráfica...
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      `;
-      document.getElementById('graficaContent').appendChild(downloadAlert);
-      
-      // Auto-ocultar el mensaje después de 3 segundos
-      setTimeout(() => {
-        if (downloadAlert.parentNode) {
-          downloadAlert.remove();
-        }
-      }, 3000);
+    // Manejar actualización de gráfica interactiva
+    document.getElementById('actualizarGraficaInteractiva').addEventListener('click', cargarGraficaInteractiva);
+    
+    // Cargar gráfica al iniciar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarGraficaInteractiva();
     });
   </script>
 </body>
