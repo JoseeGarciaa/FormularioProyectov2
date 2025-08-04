@@ -10,17 +10,17 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
 require_once '../config/database.php';
 
 try {
-    // Obtener total de estudiantes únicos
-    $total_estudiantes_query = "SELECT COUNT(DISTINCT usuario_id) as total FROM Inscripciones";
-    $total_estudiantes_result = $conn->query($total_estudiantes_query);
-    $total_estudiantes = $total_estudiantes_result->fetch_assoc()['total'];
+    // Obtener total de inscripciones
+    $total_inscripciones_query = "SELECT COUNT(*) as total FROM Inscripciones";
+    $total_inscripciones_result = $conn->query($total_inscripciones_query);
+    $total_inscripciones = $total_inscripciones_result->fetch_assoc()['total'];
     
-    // Contar cuántos estudiantes únicos están inscritos en cada materia
+    // Contar cuántas veces se inscribió cada materia
     $materias_count = [];
     
     // Para cada columna de materia
     for ($i = 1; $i <= 7; $i++) {
-        $sql = "SELECT Materia{$i} as materia, COUNT(DISTINCT usuario_id) as cantidad
+        $sql = "SELECT Materia{$i} as materia, COUNT(*) as cantidad
                 FROM Inscripciones 
                 WHERE Materia{$i} IS NOT NULL 
                   AND Materia{$i} != '' 
@@ -35,8 +35,8 @@ try {
             $cantidad = (int)$row['cantidad'];
             
             if (isset($materias_count[$materia])) {
-                // Si la materia ya existe, tomar el máximo (evitar duplicados por estudiante)
-                $materias_count[$materia] = max($materias_count[$materia], $cantidad);
+                // Sumar todas las inscripciones de esta materia
+                $materias_count[$materia] += $cantidad;
             } else {
                 $materias_count[$materia] = $cantidad;
             }
@@ -64,7 +64,7 @@ try {
             'labels' => $labels_cortos,
             'datasets' => [
                 [
-                    'label' => 'Estudiantes Inscritos',
+                    'label' => 'Inscripciones por Materia',
                     'data' => $data,
                     'backgroundColor' => [
                         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57',
@@ -79,7 +79,7 @@ try {
             ]
         ],
         'stats' => [
-            'total_estudiantes' => $total_estudiantes,
+            'total_inscripciones' => $total_inscripciones,
             'total_materias' => count($materias_count),
             'promedio' => count($materias_count) > 0 ? round(array_sum($materias_count) / count($materias_count), 1) : 0
         ]

@@ -417,7 +417,7 @@ $result = $conn->query($sql);
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="card-title mb-0">
-            <i class="bi bi-bar-chart me-2"></i> Materias Más Inscritas por Estudiantes
+            <i class="bi bi-bar-chart me-2"></i> Materias Más Inscritas
           </h5>
           <button id="actualizarGraficaInteractiva" class="btn btn-primary btn-sm">
             <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
@@ -428,8 +428,8 @@ $result = $conn->query($sql);
         <div class="row mb-4" id="estadisticasGrafica">
           <div class="col-md-4">
             <div class="text-center p-3 bg-light rounded">
-              <h6 class="text-muted mb-1">Total Estudiantes</h6>
-              <h4 class="mb-0 text-primary" id="totalEstudiantes">-</h4>
+              <h6 class="text-muted mb-1">Total Inscripciones</h6>
+              <h4 class="mb-0 text-primary" id="totalInscripciones">-</h4>
             </div>
           </div>
           <div class="col-md-4">
@@ -610,7 +610,7 @@ $result = $conn->query($sql);
         .then(data => {
           if (data.success) {
             // Actualizar estadísticas
-            document.getElementById('totalEstudiantes').textContent = data.stats.total_estudiantes;
+            document.getElementById('totalInscripciones').textContent = data.stats.total_inscripciones;
             document.getElementById('totalMaterias').textContent = data.stats.total_materias;
             document.getElementById('promedioMaterias').textContent = data.stats.promedio;
             
@@ -630,7 +630,7 @@ $result = $conn->query($sql);
                 plugins: {
                   title: {
                     display: true,
-                    text: 'Top 10 Materias Más Inscritas por Estudiantes',
+                    text: 'Top 10 Materias Más Inscritas',
                     font: {
                       size: 16,
                       weight: 'bold'
@@ -642,7 +642,7 @@ $result = $conn->query($sql);
                   tooltip: {
                     callbacks: {
                       label: function(context) {
-                        return context.parsed.y + ' estudiantes';
+                        return context.parsed.y + ' inscripciones';
                       }
                     }
                   }
@@ -652,7 +652,7 @@ $result = $conn->query($sql);
                     beginAtZero: true,
                     title: {
                       display: true,
-                      text: 'Número de Estudiantes'
+                      text: 'Número de Inscripciones'
                     },
                     ticks: {
                       stepSize: 1
