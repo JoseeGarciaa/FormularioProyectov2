@@ -288,8 +288,8 @@ while ($row = $result->fetch_assoc()) {
             
             data.materias.forEach(materia => {
               const option = document.createElement('option');
-              option.value = materia;
-              option.text = materia;
+              option.value = materia.id;
+              option.text = materia.nombre;
               materiaSelect.appendChild(option);
             });
           }
