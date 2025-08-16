@@ -43,21 +43,31 @@ try {
         }
     }
     
+
+    // Obtener los nombres de las materias
+    $materias_nombres = [];
+    $materias_query = $conn->query("SELECT id, nombre FROM Materias");
+    while ($m = $materias_query->fetch_assoc()) {
+        $materias_nombres[$m['id']] = $m['nombre'];
+    }
+
     // Ordenar por cantidad descendente
     arsort($materias_count);
-    
+
     // Tomar solo las top 10 para mejor visualización
     $top_materias = array_slice($materias_count, 0, 10, true);
-    
+
     // Preparar datos para Chart.js
-    $labels = array_keys($top_materias);
+    $labels = array_map(function($id) use ($materias_nombres) {
+        return isset($materias_nombres[$id]) ? $materias_nombres[$id] : $id;
+    }, array_keys($top_materias));
     $data = array_values($top_materias);
-    
+
     // Acortar nombres muy largos para mejor visualización
     $labels_cortos = array_map(function($label) {
         return strlen($label) > 25 ? substr($label, 0, 22) . '...' : $label;
     }, $labels);
-    
+
     $response = [
         'success' => true,
         'data' => [
@@ -84,7 +94,7 @@ try {
             'promedio' => count($materias_count) > 0 ? round(array_sum($materias_count) / count($materias_count), 1) : 0
         ]
     ];
-    
+
     header('Content-Type: application/json');
     echo json_encode($response);
     
