@@ -37,15 +37,22 @@ for ($i = 1; $i <= 7; $i++) {
     $materias[$i] = !empty($_POST[$campo]) ? $_POST[$campo] : null;
 }
 
+// Recoger materias del formulario (deben ser IDs de materias)
+$materias = [];
+for ($i = 1; $i <= 7; $i++) {
+    $campo = "materia$i";
+    $materias[$i] = !empty($_POST[$campo]) ? intval($_POST[$campo]) : null;
+}
+
 // Insertar todos los datos en Inscripciones
 $insert_sql = "INSERT INTO Inscripciones (
     usuario_id, edad, genero, numero_celular, programa_id, semestre, jornada, fecha,
-    materia1, materia2, materia3, materia4, materia5, materia6, materia7
+    Materia1, Materia2, Materia3, Materia4, Materia5, Materia6, Materia7
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = $conn->prepare($insert_sql);
 $stmt->bind_param(
-    "iisssisssssssss",
+    "iisssissiiiiiii",
     $usuario_id, $edad, $genero, $numero_celular, $programa_id,
     $semestre, $jornada, $fecha,
     $materias[1], $materias[2], $materias[3], $materias[4],
