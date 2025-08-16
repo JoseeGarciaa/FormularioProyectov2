@@ -21,14 +21,22 @@ $offset = ($pagina_actual - 1) * $registros_por_pagina;
 $total_registros = $conn->query("SELECT COUNT(*) as total FROM Inscripciones")->fetch_assoc()['total'];
 $total_paginas = ceil($total_registros / $registros_por_pagina);
 
+
+// Obtener todos los nombres de materias en un array asociativo
+$materias_nombres = [];
+$materias_query = $conn->query("SELECT id, nombre FROM Materias");
+while ($m = $materias_query->fetch_assoc()) {
+  $materias_nombres[$m['id']] = $m['nombre'];
+}
+
 // Traer inscripciones con nombre del usuario y materias con paginación
 $sql = "SELECT u.nombre, u.apellido, i.edad, i.genero, i.numero_celular, i.semestre, i.jornada,
-               i.Materia1, i.Materia2, i.Materia3, i.Materia4, i.Materia5, i.Materia6, i.Materia7
-        FROM Inscripciones i
-        JOIN Usuarios u ON i.usuario_id = u.id
-        ORDER BY i.id DESC
-        LIMIT $offset, $registros_por_pagina";
-$result = $conn->query($sql); 
+         i.Materia1, i.Materia2, i.Materia3, i.Materia4, i.Materia5, i.Materia6, i.Materia7
+    FROM Inscripciones i
+    JOIN Usuarios u ON i.usuario_id = u.id
+    ORDER BY i.id DESC
+    LIMIT $offset, $registros_por_pagina";
+$result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -494,10 +502,16 @@ $result = $conn->query($sql);
               <?php 
               $count = 1;
               while ($row = $result->fetch_assoc()): 
-                $materias = array_filter([
+                $materias_ids = array_filter([
                   $row['Materia1'], $row['Materia2'], $row['Materia3'],
                   $row['Materia4'], $row['Materia5'], $row['Materia6'], $row['Materia7']
                 ]);
+                $materias = [];
+                foreach ($materias_ids as $id) {
+                  if (isset($materias_nombres[$id])) {
+                    $materias[] = $materias_nombres[$id];
+                  }
+                }
               ?>
                 <tr>
                   <td><?= $count++ ?></td>
